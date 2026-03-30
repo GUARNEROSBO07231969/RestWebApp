@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-logo">
+      <span>🔒</span>
+    </div>
+    <div class="login-title">Sign In</div>
+    <form class="login-form" method="post" action="/login">
+      <div class="input-group">
+        <input id="username" name="username" type="text" required placeholder=" " autocomplete="username" />
+        <label for="username">Username</label>
+      </div>
+      <div class="input-group">
+        <input id="password" name="password" type="password" required placeholder=" " autocomplete="current-password" />
+        <label for="password">Password</label>
+      </div>
+      <!-- Error message placeholder, will be shown if login fails -->
+      <div th:if="${param.error}" class="error-message login-form">Invalid username or password</div>
+      <button class="login-btn" type="submit">Login</button>
+    </form>
+  </div>
+</body>
+</html>
