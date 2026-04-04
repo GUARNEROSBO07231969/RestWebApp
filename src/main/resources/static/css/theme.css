@@ -1,8 +1,7 @@
-
 :root{--bg:#f1f5f9;--card:#ffffff;--text:#0f172a;--table:#e0f2fe;--table-head:#bae6fd}
 [data-theme=dark]{--bg:#0f172a;--card:#1e293b;--text:#e5e7eb;--table:#172033;--table-head:#0f1b2d}
-body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;padding:16px}
-.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;padding:8px !important}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px !important}
 .theme-toggle{display:flex;align-items:center;gap:8px}
 .switch{position:relative;width:40px;height:20px}
 .switch input{display:none}
@@ -14,7 +13,7 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-s
 .restaurant-select{background:#e0f2fe;border:1px solid #94a3b8;border-radius:12px;padding:8px 10px;font-size:14px;width:70%;margin-bottom:10px}
 
 /* KPI grid with ~30% reduction */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr) 220px;gap:12px;margin-bottom:12px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr) 220px;gap:4px !important;margin-bottom:0 !important}
 .kpi{background:var(--card);padding:14px;border-radius:14px;text-align:center}
 .kpi span{font-size:14px;opacity:.85}
 .kpi strong{font-size:44px;display:block}
@@ -22,7 +21,7 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-s
 .chart-box{height:140px;min-height:120px;background:var(--card);border-radius:14px;padding:8px}
 
 /* Modern inputs with floating labels */
-.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:12px}
+.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px !important;margin-bottom:4px !important}
 .input-group{position:relative;background:var(--card);border:1px solid #cbd5e1;border-radius:16px;padding:18px 14px 6px 42px}
 .input-group input{width:100%;border:none;background:transparent;font-size:16px;font-weight:600;color:var(--text)}
 .input-group label{position:absolute;top:50%;left:42px;transform:translateY(-50%);font-size:13px;color:#64748b;transition:all .2s}
@@ -31,13 +30,13 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-s
 .input-group.readonly{background:#f1f5f9}
 
 /* Buttons */
-.btn-row{display:flex;gap:12px;margin-bottom:14px}
+.btn-row{display:flex;gap:6px !important;margin-bottom:6px !important}
 .btn{padding:9.6px 22px;border-radius:12.8px;border:none;font-size:0.88rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
 .btn-primary{background:#2563eb;color:#fff}
 .btn-secondary{background:#e5e7eb;color:#374151}
 
 /* Table */
-.modern{width:100%;border-collapse:collapse;background:var(--table);border-radius:14px;overflow:hidden}
+.modern{width:100%;border-collapse:collapse;background:var(--table);border-radius:14px;overflow:hidden;margin-bottom:4px !important}
 .modern th{text-align:left;background:var(--table-head);padding:12px;font-size:13px;text-transform:uppercase}
 .modern td{padding:12px}
 .modern tr:nth-child(even){background:rgba(255,255,255,0.35)}
@@ -138,24 +137,164 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-s
 /* Reduce KPI grid and chart container size by 30% */
 .kpi-grid {
   grid-template-columns: repeat(4, 1fr) 154px; /* 220px * 0.7 = 154px */
-  gap: 8px; /* reduce gap for compactness */
-  margin-bottom: 8px;
+  gap: 4px !important; /* reduce gap for compactness */
+  margin-bottom: 0 !important;
   transform: scale(0.7);
   transform-origin: top left;
 }
 .kpi {
-  padding: 10px; /* reduce padding */
+  padding: 8px; /* reduce padding */
   border-radius: 10px;
 }
 .kpi span {
   font-size: 10px;
 }
 .kpi strong {
-  font-size: 31px;
+  font-size: 28px;
 }
 .chart-box {
-  height: 118px;      /* 98px * 1.2 = 117.6px */
-  min-height: 101px;  /* 84px * 1.2 = 100.8px */
+  height: 90px;      /* 98px * 1.2 = 117.6px */
+  min-height: 70px;  /* 84px * 1.2 = 100.8px */
   border-radius: 10px;
   padding: 6px;
+}
+h3 {
+  margin-top: 0 !important;
+  margin-bottom: 6px !important;
+  font-size: 1.1rem;
+}
+
+/* --- Modern Table Enhancements (Additive) --- */
+.modern th, .modern td {
+  padding: 5px 4px !important;
+  font-size: 12px;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
+.modern td {
+  vertical-align: middle;
+}
+.action-btn {
+  padding: 4px 8px !important;
+  border-radius: 7px !important;
+  font-size: 11px !important;
+  min-width: 44px;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  margin-right: 2px;
+}
+.modern {
+  margin-bottom: 2px !important;
+  box-shadow: 0 2px 12px 0 rgba(30,41,59,0.07);
+  border: 1.5px solid #cbd5e1;
+}
+.modern tr:hover {
+  background: #f3f4f6 !important;
+  transition: background 0.2s;
+}
+/* Grand total row styling - match table header */
+.grand-total-row {
+  background: var(--table-head) !important;
+  color: var(--text) !important;
+  font-size: 1.08em;
+  font-weight: bold;
+  border-top: 3px solid #1e40af;
+  box-shadow: 0 2px 8px 0 rgba(37,99,235,0.10);
+}
+.grand-total-row td {
+  border-bottom: none !important;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+/* Revert KPI total color to previous purple */
+.kpi.total {
+  background: #9333ea !important;
+  color: #fff !important;
+}
+
+/* --- Modern Inputs Enhancements (Additive) --- */
+.input-group input {
+  height: 12.54px !important; /* Reduced by 30% from previous 17.92px */
+  min-height: 12.54px !important;
+  font-size: 11px !important;
+  padding-top: 0.5px !important;
+  padding-bottom: 0.5px !important;
+  cursor: text;
+  z-index: 2;
+  position: relative;
+}
+.input-group label {
+  pointer-events: none;
+}
+.input-group {
+  cursor: text;
+}
+.input-group:active, .input-group:focus-within {
+  box-shadow: 0 0 0 2px #2563eb33;
+  border-color: #2563eb;
+}
+.input-group input:focus {
+  outline: none !important;
+  background: #e0f2fe !important;
+}
+.input-group input {
+  background-clip: padding-box;
+}
+.input-group {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* --- Input Button Height and Icon Adjustments (Additive) --- */
+.btn, .btn-row .btn {
+  padding: 4px 10px !important; /* Reduce vertical padding for height */
+  min-height: 18px !important;
+  font-size: 11px !important;
+  border-radius: 8px !important;
+}
+.btn .material-icons, .btn .icon, .btn svg, .btn-row .btn .material-icons, .btn-row .btn .icon {
+  font-size: 13px !important;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+/* --- KPI Label and Amount Styling (Additive) --- */
+.kpi span {
+  display: block;
+  font-size: 1.38rem !important; /* 20% larger */
+  font-weight: 600;
+  margin-bottom: 2px;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+.kpi strong {
+  font-size: 2.3rem !important;
+  font-weight: 700;
+  margin-top: 0.1em;
+  line-height: 1.1;
+  display: block;
+}
+.kpi {
+  min-width: 140px;
+  min-height: 90px;
+  padding: 22px 10px 16px 10px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Sort Indicator Styling (Additive) --- */
+.sort-indicator {
+  font-size: 1.1em;
+  margin-left: 2px;
+  color: #2563eb;
+  vertical-align: middle;
+  transition: color 0.2s;
+}
+th[onclick] {
+  user-select: none;
+  position: relative;
+  background: linear-gradient(90deg, #e0f2fe 0%, #bae6fd 100%);
+  transition: background 0.2s;
+}
+th[onclick]:hover {
+  background: #bae6fd;
 }
