@@ -21,24 +21,28 @@
   <select id="restaurantSelect" class="restaurant-select" onchange="loadData()"></select>
 
   <div class="kpi-grid">
-    <div class="kpi cash"><span style="font-size:1.38rem">💵 Grand Total Cash</span><strong id="cashVal">$0</strong></div>
-    <div class="kpi visa"><span style="font-size:1.38rem">💳 Grand Total Visa</span><strong id="visaVal">$0</strong></div>
-    <div class="kpi spent"><span style="font-size:1.38rem">💸 Grand Total Expense</span><strong id="spentVal">$0</strong></div>
-    <div class="kpi total"><span style="font-size:1.38rem">📊 Grand Total</span><strong id="totalVal">$0</strong></div>
-    <div class="chart-box"><canvas id="pie"></canvas></div>
+    <div class="kpi net"><span style="font-size:1.38rem"><span class="kpi-icon" style="color:#0ea5e9;margin-right:4px;">💹</span>Grand Gross Net Amount</span><strong id="netVal">$0</strong><span class="kpi-pct" id="netPct"></span></div>
+    <div class="kpi spent"><span style="font-size:1.38rem"><span class="kpi-icon" style="color:#f97316;margin-right:4px;">💸</span>Grand Total Expense</span><strong id="spentVal">$0</strong><span class="kpi-pct" id="spentPct"></span></div>
+    <div class="kpi total"><span style="font-size:1.38rem"><span class="kpi-icon" style="color:#9333ea;margin-right:4px;">📊</span>Grand Total Amount</span><strong id="totalVal">$0</strong><span class="kpi-pct" id="totalPct"></span></div>
   </div>
 
   <h3>Add / Edit Transaction</h3>
-  <div class="form-grid modern-inputs">
+  <div class="form-grid modern-inputs single-row-form">
+    <div class="input-group readonly"><span class="input-icon">💹</span><input id="netSaleAmount" readonly placeholder=" "><label>Gross Net Amount</label></div>
     <div class="input-group"><span class="input-icon">💵</span><input id="cashAmount" placeholder=" " oninput="recalcTotal()"><label>Cash Amount</label></div>
     <div class="input-group"><span class="input-icon">💳</span><input id="visaAmount" placeholder=" " oninput="recalcTotal()"><label>Visa Amount</label></div>
     <div class="input-group"><span class="input-icon">🏬</span><input id="storeName" placeholder=" "><label>Store Name</label></div>
-    <div class="input-group"><span class="input-icon">💸</span><input id="spentAmount" placeholder=" " oninput="recalcTotal()"><label>Expense Amount</label></div>
-    <div class="input-group readonly"><span class="input-icon">📊</span><input id="calcTotal" readonly placeholder=" "><label>Total</label></div>
+    <div class="input-group"><span class="input-icon">💸</span><input id="expenseAmount" placeholder=" " oninput="recalcTotal()"><label>Expense Amount</label></div>
+    <div class="input-group readonly"><span class="input-icon">📊</span><input id="calcTotal" readonly placeholder=" "><label>Total Amount</label></div>
   </div>
   <div class="btn-row">
     <button class="btn btn-primary" onclick="saveTx()">💾 Save</button>
     <button class="btn btn-secondary" onclick="cancelEdit()">✖ Cancel</button>
+  </div>
+
+  <div class="btn-row" style="margin-bottom:4px;justify-content:flex-end">
+    <button class="btn btn-secondary" onclick="printPDF()">🖨️ Print PDF</button>
+    <button class="btn btn-secondary" onclick="printExcel()">📥 Print Excel</button>
   </div>
 
   <div class="search-row" style="margin-bottom:4px;display:flex;align-items:center;gap:8px">
@@ -49,11 +53,12 @@
     <thead>
       <tr>
         <th onclick="sortTable('date')" style="cursor:pointer" title="Sort by Date">Date <span class="sort-indicator" id="sort-date"></span></th>
+        <th onclick="sortTable('netSaleAmount')" style="cursor:pointer" title="Sort by Gross Net Amount">Gross Net Amount <span class="sort-indicator" id="sort-netSaleAmount"></span></th>
         <th onclick="sortTable('cashAmount')" style="cursor:pointer" title="Sort by Cash Amount">Cash Amount <span class="sort-indicator" id="sort-cashAmount"></span></th>
         <th onclick="sortTable('visaAmount')" style="cursor:pointer" title="Sort by Visa Amount">Visa Amount <span class="sort-indicator" id="sort-visaAmount"></span></th>
         <th onclick="sortTable('storeName')" style="cursor:pointer" title="Sort by Store Name">Store Name <span class="sort-indicator" id="sort-storeName"></span></th>
         <th onclick="sortTable('spent')" style="cursor:pointer" title="Sort by Expense Amount">Expense Amount <span class="sort-indicator" id="sort-spent"></span></th>
-        <th onclick="sortTable('totalAmount')" style="cursor:pointer" title="Sort by Total">Total <span class="sort-indicator" id="sort-totalAmount"></span></th>
+        <th onclick="sortTable('totalAmount')" style="cursor:pointer" title="Sort by Total Amount">Total Amount <span class="sort-indicator" id="sort-totalAmount"></span></th>
         <th>Actions</th>
       </tr>
     </thead>

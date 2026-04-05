@@ -15,15 +15,18 @@ public class Sale {
     public double cashAmount;
     public double visaAmount;
     public String storeName; // new field for store name
-    public double spent;
+    public Double expenseAmount; // use expenseAmount instead of spent
     public double totalAmount;
+    public Double netSaleAmount; // new field for Gross Net Amount
     public LocalDateTime date;
 
     @PrePersist
     @PreUpdate
     void calc() {
-        totalAmount = cashAmount + visaAmount - spent;
+        totalAmount = cashAmount + visaAmount - (expenseAmount != null ? expenseAmount : 0);
         if (date == null) date = LocalDateTime.now();
+        // Optionally, calculate netSaleAmount if you want it derived
+        // netSaleAmount = cashAmount + visaAmount;
     }
 
     @Column(name = "store_name")
@@ -34,4 +37,10 @@ public class Sale {
     public void setStoreName(String storeName) {
         this.storeName = storeName;
     }
+
+    public Double getExpenseAmount() { return expenseAmount; }
+    public void setExpenseAmount(Double expenseAmount) { this.expenseAmount = expenseAmount; }
+
+    public Double getNetSaleAmount() { return netSaleAmount; }
+    public void setNetSaleAmount(Double netSaleAmount) { this.netSaleAmount = netSaleAmount; }
 }
