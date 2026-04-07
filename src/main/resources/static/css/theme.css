@@ -650,7 +650,7 @@ th[onclick]:hover {
 .tab-menu {
   display: flex;
   border-bottom: 2px solid #e5e7eb;
-  background: #f3f4f6;
+  background: transparent; /* tab bar is now transparent */
   padding: 0 8px;
   margin-bottom: 18px;
   font-family: inherit;
@@ -659,16 +659,16 @@ th[onclick]:hover {
   list-style: none;
 }
 .tab {
-  font-size: 1.08rem;
+  font-size: 0.86rem; /* reduced by ~20% */
   font-weight: 600;
   color: #555;
-  background: #e5e7eb;
-  border: 1.5px solid #e5e7eb;
+  background: #e0e7ff; /* changed background color */
+  border: 1.5px solid #e0e7ff;
   border-bottom: none;
   border-radius: 12px 12px 0 0;
-  padding: 0 32px;
-  height: 44px;
-  min-width: 120px;
+  padding: 0 26px; /* reduce horizontal padding by 20% */
+  height: 35px; /* reduced by ~20% from 44px */
+  min-width: 96px; /* reduced by 20% from 120px */
   cursor: pointer;
   outline: none;
   margin-right: 6px;
@@ -678,16 +678,20 @@ th[onclick]:hover {
   z-index: 1;
   position: relative;
   list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center label horizontally */
+  text-align: center;
 }
 .tab:not(.tab-active):hover {
-  background: #f9fafb;
+  background: #f1f5f9;
   color: #222;
   box-shadow: 0 4px 12px #0001;
 }
 .tab.tab-active {
-  background: #38bdf8;
+  background: #2563eb; /* deeper blue for active */
   color: #fff;
-  border: 1.5px solid #38bdf8;
+  border: 1.5px solid #2563eb;
   border-bottom: 2.5px solid #fff;
   box-shadow: 0 6px 24px #6366f122, 0 -2px 0 #fff inset;
   z-index: 2;
@@ -695,9 +699,9 @@ th[onclick]:hover {
 }
 @media (max-width: 600px) {
   .tab {
-    font-size: 0.97rem;
-    padding: 0 12px;
-    min-width: 80px;
-    height: 32px;
+    font-size: 0.78rem;
+    padding: 0 10px;
+    min-width: 64px;
+    height: 26px;
   }
 }
