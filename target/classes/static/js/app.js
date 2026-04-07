@@ -82,6 +82,38 @@ function setupSearchInput() {
 document.addEventListener('DOMContentLoaded', () => {
   loadRestaurants();
   setupSearchInput();
+
+  // --- KPI tooltip logic for Grand Gross Net Amount ---
+  const netVal = document.getElementById('netVal');
+  const tooltip = document.getElementById('netKpiTooltip');
+  let hideTimer = null;
+  if (netVal && tooltip) {
+    netVal.addEventListener('mouseenter', () => {
+      // Calculate cash and visa percentages from current KPI values
+      let c = 0, v = 0;
+      const filteredData = getFilteredData();
+      filteredData.forEach(x => {
+        c += x.cashAmount || 0;
+        v += x.visaAmount || 0;
+      });
+      const n = c + v;
+      const cashPct = n > 0 ? (c / n * 100) : 0;
+      const visaPct = n > 0 ? (v / n * 100) : 0;
+      document.getElementById('tooltipCashPct').textContent = cashPct.toFixed(1) + '%';
+      document.getElementById('tooltipVisaPct').textContent = visaPct.toFixed(1) + '%';
+      tooltip.style.display = 'block';
+    });
+    netVal.addEventListener('mouseleave', () => {
+      hideTimer = setTimeout(() => { tooltip.style.display = 'none'; }, 120);
+    });
+    tooltip.addEventListener('mouseenter', () => {
+      if (hideTimer) clearTimeout(hideTimer);
+      tooltip.style.display = 'block';
+    });
+    tooltip.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+    });
+  }
 });
 
 function getFilteredData() {
@@ -282,3 +314,152 @@ function printExcel() {
     URL.revokeObjectURL(url);
   }, 100);
 }
+
+function switchTab(tab) {
+  const salesTab = document.getElementById('tabSales');
+  const suppliersTab = document.getElementById('tabSuppliers');
+  const salesContent = document.getElementById('tabContentSales');
+  const suppliersContent = document.getElementById('tabContentSuppliers');
+  if (tab === 'sales') {
+    salesTab.classList.add('tab-active');
+    suppliersTab.classList.remove('tab-active');
+    salesContent.style.display = '';
+    suppliersContent.style.display = 'none';
+  } else if (tab === 'suppliers') {
+    salesTab.classList.remove('tab-active');
+    suppliersTab.classList.add('tab-active');
+    salesContent.style.display = 'none';
+    suppliersContent.style.display = '';
+  }
+}
+
+// --- Supplier Invoice Transactions logic ---
+let supplierEditId = null;
+let supplierData = [];
+
+function getSelectedRestaurantId() {
+  const sel = document.getElementById('restaurantSelect');
+  return sel && sel.value ? sel.value : null;
+}
+
+async function loadSupplierData() {
+  const restaurantId = getSelectedRestaurantId();
+  if (!restaurantId) { supplierData = []; renderSupplierTable(); return; }
+  try {
+    const res = await fetch(`/api/suppliers?restaurantId=${restaurantId}`);
+    supplierData = await res.json();
+  } catch (e) {
+    supplierData = [];
+  }
+  renderSupplierTable();
+}
+
+function renderSupplierTable() {
+  const tbody = document.getElementById('supplierRows');
+  tbody.innerHTML = '';
+  const selectedRestaurantId = getSelectedRestaurantId();
+  let totalAmount = 0;
+  const filtered = supplierData.filter(row => row.restaurantId == selectedRestaurantId);
+  filtered.forEach((row, idx) => {
+    totalAmount += Number(row.invoiceAmount) || 0;
+    tbody.innerHTML += `<tr>
+      <td>${row.supplierName}</td>
+      <td>${row.transactionDate}</td>
+      <td>${row.invoiceNumber}</td>
+      <td>${row.checkNumber}</td>
+      <td>$${Number(row.invoiceAmount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td>${row.notes||''}</td>
+      <td>
+        <button class='action-btn edit-btn' onclick='editSupplierRow(${idx})'>Edit</button>
+        <button class='action-btn delete-btn' onclick='deleteSupplierRow(${idx})'>Delete</button>
+      </td>
+    </tr>`;
+  });
+  // Add grand total row
+  if (filtered.length > 0) {
+    tbody.innerHTML += `<tr class='grand-total-row'>
+      <td class='grand-label'>Grand Total</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td><strong>$${totalAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td>
+      <td></td>
+      <td></td>
+    </tr>`;
+  }
+}
+
+function clearSupplierForm() {
+  supplierEditId = null;
+  supplierForm.reset();
+}
+
+document.getElementById('restaurantSelect').addEventListener('change', loadSupplierData);
+
+document.getElementById('supplierForm').onsubmit = async function(e) {
+  e.preventDefault();
+  const selectedRestaurantId = getSelectedRestaurantId();
+  const row = {
+    restaurantId: selectedRestaurantId,
+    supplierName: document.getElementById('supplierName').value,
+    transactionDate: document.getElementById('transactionDate').value,
+    invoiceNumber: document.getElementById('invoiceNumber').value,
+    checkNumber: document.getElementById('checkNumber').value,
+    invoiceAmount: document.getElementById('invoiceAmount').value,
+    notes: document.getElementById('notes').value
+  };
+  try {
+    let resp;
+    if (supplierEditId !== null && supplierData[supplierEditId] && supplierData[supplierEditId].id) {
+      // Update existing
+      resp = await fetch(`/api/suppliers/${supplierData[supplierEditId].id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(row)
+      });
+    } else {
+      // Create new
+      resp = await fetch('/api/suppliers', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(row)
+      });
+    }
+    if (!resp.ok) {
+      const text = await resp.text();
+      alert('Error saving supplier transaction: ' + text);
+      console.error('Supplier save error:', text);
+      return;
+    }
+  } catch (e) {
+    alert('Error saving supplier transaction: ' + e);
+    console.error('Supplier save error:', e);
+    return;
+  }
+  supplierEditId = null;
+  supplierForm.reset();
+  await loadSupplierData();
+};
+
+window.editSupplierRow = function(idx) {
+  const row = supplierData[idx];
+  document.getElementById('supplierName').value = row.supplierName;
+  document.getElementById('transactionDate').value = row.transactionDate;
+  document.getElementById('invoiceNumber').value = row.invoiceNumber;
+  document.getElementById('checkNumber').value = row.checkNumber;
+  document.getElementById('invoiceAmount').value = row.invoiceAmount;
+  document.getElementById('notes').value = row.notes;
+  supplierEditId = idx;
+};
+
+window.deleteSupplierRow = async function(idx) {
+  if (supplierData[idx] && supplierData[idx].id) {
+    try {
+      await fetch(`/api/suppliers/${supplierData[idx].id}`, { method: 'DELETE' });
+    } catch (e) {}
+  }
+  supplierEditId = null;
+  await loadSupplierData();
+};
+
+document.addEventListener('DOMContentLoaded', loadSupplierData);

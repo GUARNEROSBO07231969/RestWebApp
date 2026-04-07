@@ -1,10 +1,13 @@
 com\example\restaurant\RestaurantApplication.class
 com\example\restaurant\repository\RestaurantRepository.class
 com\example\restaurant\controller\LoginController.class
+com\example\restaurant\controller\SupplierInvoiceTransactionController.class
 com\example\restaurant\model\Restaurant.class
+com\example\restaurant\model\SupplierInvoiceTransaction.class
 com\example\restaurant\security\SecurityConfig.class
 com\example\restaurant\controller\SaleController.class
 com\example\restaurant\controller\HomeController.class
 com\example\restaurant\model\Sale.class
+com\example\restaurant\repository\SupplierInvoiceTransactionRepository.class
 com\example\restaurant\controller\RestaurantController.class
 com\example\restaurant\repository\SaleRepository.class
