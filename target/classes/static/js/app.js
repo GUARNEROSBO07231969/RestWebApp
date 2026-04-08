@@ -387,6 +387,8 @@ function renderSupplierTable() {
       <td></td>
     </tr>`;
   }
+  // Call KPI/graph render with filtered data
+  renderSupplierKpiAndGraphs(filtered);
 }
 
 function clearSupplierForm() {
@@ -463,3 +465,101 @@ window.deleteSupplierRow = async function(idx) {
 };
 
 document.addEventListener('DOMContentLoaded', loadSupplierData);
+
+// --- Supplier KPI, Word Cloud, and Heat Map logic ---
+function renderSupplierKpiAndGraphs(filteredData) {
+  // KPI
+  const supplierKpiVal = document.getElementById('supplierKpiVal');
+  let total = 0;
+  const supplierTotals = {};
+  filteredData.forEach(row => {
+    const amount = Number(row.invoiceAmount) || 0;
+    total += amount;
+    if (row.supplierName) {
+      supplierTotals[row.supplierName] = (supplierTotals[row.supplierName] || 0) + amount;
+    }
+  });
+  if (supplierKpiVal) {
+    supplierKpiVal.textContent = `$${total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  }
+  // Word Cloud
+  const sortedSuppliers = Object.entries(supplierTotals)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+  if (window.WordCloud) {
+    WordCloud(document.getElementById('supplierWordCloud'), {
+      list: sortedSuppliers,
+      gridSize: 12,
+      weightFactor: function (size) { return Math.max(16, size / (total||1) * 120); },
+      fontFamily: 'Inter, system-ui',
+      color: '#f97316',
+      backgroundColor: '#f3f4f6',
+      rotateRatio: 0,
+      minSize: 12,
+      drawOutOfBound: false,
+      shrinkToFit: true,
+      click: function(item) {},
+      hover: function(item, dimension, event) {
+        const tooltip = document.getElementById('supplierWordCloudTooltip');
+        if (item && tooltip) {
+          const [name, value] = item;
+          const pct = total > 0 ? (value/total*100).toFixed(1) : 0;
+          tooltip.innerHTML = `<div style='font-weight:700;font-size:1.1em;margin-bottom:2px;'>${name}</div><div style='color:#f97316;font-weight:800;letter-spacing:0.5px;font-size:1.25em;'>${pct}%</div><div style='font-size:0.85em;color:#555;'>of total</div>`;
+          tooltip.style.display = 'block';
+          tooltip.style.left = (event.pageX + 12) + 'px';
+          tooltip.style.top = (event.pageY - 24) + 'px';
+        } else if (tooltip) {
+          tooltip.style.display = 'none';
+        }
+      }
+    });
+    document.getElementById('supplierWordCloud').onmouseleave = function() {
+      const tooltip = document.getElementById('supplierWordCloudTooltip');
+      if (tooltip) tooltip.style.display = 'none';
+    };
+  }
+  // Heat Map
+  const heatMapLabels = sortedSuppliers.map(([name]) => name);
+  const heatMapData = sortedSuppliers.map(([, value]) => value);
+  if (window.supplierHeatMapChart) {
+    window.supplierHeatMapChart.destroy();
+  }
+  const ctx = document.getElementById('supplierHeatMap').getContext ? document.getElementById('supplierHeatMap').getContext('2d') : null;
+  if (ctx && heatMapLabels.length > 0) {
+    window.supplierHeatMapChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: heatMapLabels,
+        datasets: [{
+          label: 'Total Invoice Amount',
+          data: heatMapData,
+          backgroundColor: heatMapData.map(v => `rgba(249,115,22,${0.3 + 0.7 * (v/Math.max(...heatMapData))})`),
+          borderRadius: 8,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const val = context.raw;
+                const pct = total > 0 ? (val/total*100).toFixed(1) : 0;
+                return `${context.label}: $${val.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} (${pct}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { beginAtZero: true, grid: { color: '#e5e7eb' } },
+          y: { grid: { color: '#e5e7eb' } }
+        },
+        responsive: false,
+        maintainAspectRatio: false,
+      }
+    });
+  } else if (document.getElementById('supplierHeatMap')) {
+    document.getElementById('supplierHeatMap').innerHTML = '<div style="color:#888;text-align:center;padding-top:40px;">No data</div>';
+  }
+}
