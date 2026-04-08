@@ -415,6 +415,41 @@ function getFilteredData() {
   });
 }
 
+let supplierPage = 1, supplierPageSize = 15;
+
+function renderSupplierPagination(filteredLength) {
+  const pagination = document.getElementById('supplierPagination');
+  const pageCount = Math.ceil(filteredLength / supplierPageSize);
+  let html = '';
+  if (pageCount > 1) {
+    html += `<button onclick="gotoSupplierPage(${supplierPage-1})" ${supplierPage===1?'disabled':''}>Prev</button>`;
+    for(let i=1;i<=pageCount;i++) {
+      html += `<button onclick="gotoSupplierPage(${i})" ${i===supplierPage?'style=\'font-weight:bold\'':''}>${i}</button>`;
+    }
+    html += `<button onclick="gotoSupplierPage(${supplierPage+1})" ${supplierPage===pageCount?'disabled':''}>Next</button>`;
+  }
+  pagination.innerHTML = html;
+}
+
+function gotoSupplierPage(page) {
+  const selectedRestaurantId = getSelectedRestaurantId();
+  let filtered = supplierData.filter(row => row.restaurantId == selectedRestaurantId);
+  if (supplierSearchTerm) {
+    filtered = filtered.filter(row =>
+      (row.supplierName && row.supplierName.toLowerCase().includes(supplierSearchTerm)) ||
+      (row.transactionDate && row.transactionDate.toLowerCase().includes(supplierSearchTerm)) ||
+      (row.invoiceNumber && row.invoiceNumber.toLowerCase().includes(supplierSearchTerm)) ||
+      (row.checkNumber && row.checkNumber.toLowerCase().includes(supplierSearchTerm)) ||
+      (row.invoiceAmount && String(row.invoiceAmount).toLowerCase().includes(supplierSearchTerm)) ||
+      (row.notes && row.notes.toLowerCase().includes(supplierSearchTerm))
+    );
+  }
+  const pageCount = Math.ceil(filtered.length / supplierPageSize);
+  if(page < 1 || page > pageCount) return;
+  supplierPage = page;
+  renderSupplierTable();
+}
+
 function renderSupplierTable() {
   const tbody = document.getElementById('supplierRows');
   tbody.innerHTML = '';
@@ -432,7 +467,12 @@ function renderSupplierTable() {
       (row.notes && row.notes.toLowerCase().includes(supplierSearchTerm))
     );
   }
-  filtered.forEach((row, idx) => {
+  // Pagination logic
+  const pageCount = Math.ceil(filtered.length / supplierPageSize);
+  if (supplierPage > pageCount) supplierPage = pageCount || 1;
+  const start = (supplierPage - 1) * supplierPageSize;
+  const pageData = filtered.slice(start, start + supplierPageSize);
+  pageData.forEach((row, idx) => {
     totalAmount += Number(row.invoiceAmount) || 0;
     tbody.innerHTML += `<tr>
       <td>${row.supplierName}</td>
@@ -442,8 +482,8 @@ function renderSupplierTable() {
       <td>$${Number(row.invoiceAmount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
       <td>${row.notes||''}</td>
       <td>
-        <button class='action-btn edit-btn' onclick='editSupplierRow(${idx})'>Edit</button>
-        <button class='action-btn delete-btn' onclick='deleteSupplierRow(${idx})'>Delete</button>
+        <button class='action-btn edit-btn' onclick='editSupplierRow(${start+idx})'>Edit</button>
+        <button class='action-btn delete-btn' onclick='deleteSupplierRow(${start+idx})'>Delete</button>
       </td>
     </tr>`;
   });
@@ -459,10 +499,7 @@ function renderSupplierTable() {
       <td></td>
     </tr>`;
   }
-  // Remove pagination controls
-  const pagDiv = document.getElementById('supplierPagination');
-  if (pagDiv) pagDiv.innerHTML = '';
-  // Call KPI/graph render with filtered data
+  renderSupplierPagination(filtered.length);
   renderSupplierKpiAndGraphs(filtered);
 }
 
@@ -604,4 +641,46 @@ function renderSupplierKpiAndGraphs(filteredData) {
   } else if (document.getElementById('supplierHeatMap')) {
     document.getElementById('supplierHeatMap').innerHTML = '<div style="color:#888;text-align:center;padding-top:40px;">No data</div>';
   }
+}
+
+// --- Print functions for Supplier Invoices ---
+function printSupplierPDF() {
+  // Hide form, search, nav, and tabs for print
+  const form = document.getElementById('supplierForm');
+  const search = document.getElementById('supplierTableSearch');
+  const pag = document.getElementById('supplierPagination');
+  const tabs = document.querySelector('.tab-menu');
+  if (form) form.style.display = 'none';
+  if (search) search.style.display = 'none';
+  if (pag) pag.style.display = 'none';
+  if (tabs) tabs.style.display = 'none';
+  // Print only KPI, graph, and table
+  window.print();
+  // Restore after print
+  setTimeout(() => {
+    if (form) form.style.display = '';
+    if (search) search.style.display = '';
+    if (pag) pag.style.display = '';
+    if (tabs) tabs.style.display = '';
+  }, 500);
+}
+
+function printSupplierExcel() {
+  // Export only the supplier table (with grand total)
+  const table = document.getElementById('supplierTable');
+  let html = '';
+  if (table) {
+    html += table.outerHTML;
+  }
+  const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'supplier_invoices.xls';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
 }
