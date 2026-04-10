@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface SupplierInvoiceTransactionRepository extends JpaRepository<SupplierInvoiceTransaction, Long> {
-    List<SupplierInvoiceTransaction> findByRestaurantId(Long restaurantId);
+     List<SupplierInvoiceTransaction> findByRestaurantId(Long restaurantId);
 }
