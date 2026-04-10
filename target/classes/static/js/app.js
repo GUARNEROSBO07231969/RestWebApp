@@ -333,6 +333,27 @@ function switchTab(tab) {
   }
 }
 
+function updateTabSlider() {
+  const tabMenu = document.querySelector('.tab-menu');
+  const slider = tabMenu.querySelector('.tab-slider');
+  const activeTab = tabMenu.querySelector('.tab-active');
+  if (activeTab && slider) {
+    const rect = activeTab.getBoundingClientRect();
+    const parentRect = tabMenu.getBoundingClientRect();
+    slider.style.left = (rect.left - parentRect.left) + 'px';
+    slider.style.width = rect.width + 'px';
+  }
+}
+
+// Patch switchTab to update slider
+const origSwitchTab = window.switchTab;
+window.switchTab = function(tab) {
+  origSwitchTab(tab);
+  setTimeout(updateTabSlider, 10);
+};
+window.addEventListener('DOMContentLoaded', updateTabSlider);
+window.addEventListener('resize', updateTabSlider);
+
 // --- Supplier Invoice Transactions logic ---
 let supplierEditId = null;
 let supplierData = [];

@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/1694606a-656a-4b5f-b3cb-38c646468869/resourceGroups/RestWebAppmrramon/providers/Microsoft.Web/sites/Restmrramon-WebApp",
+    "appService.deploySubpath": "src\\main"
+}
