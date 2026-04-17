@@ -567,15 +567,7 @@ function renderSupplierTable() {
   });
   // Add grand total row
   if (filtered.length > 0) {
-    tbody.innerHTML += `<tr class='grand-total-row'>
-      <td class='grand-label'>Grand Total</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td><strong>$${totalAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td>
-      <td></td>
-      <td></td>
-    </tr>`;
+    tbody.innerHTML += `<tr class='grand-total-row' style=\"background:#f97316 !important;color:#fff !important;font-size:1.08em;font-weight:bold;border-top:3px solid #ea580c;box-shadow:0 2px 8px 0 rgba(234,88,12,0.10);\">\n      <td class='grand-label' style=\"font-weight:bold !important; color:#fff !important;\">Grand Total</td>\n      <td></td>\n      <td></td>\n      <td></td>\n      <td style=\"background:#f97316 !important;color:#fff !important;font-weight:bold !important;text-align:left !important;font-size:11px !important;padding:2.5px 3px !important;\"><strong>$${totalAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td>\n      <td></td>\n      <td></td>\n    </tr>`;
   }
   renderSupplierPagination(filtered.length);
   renderSupplierKpiAndGraphs(filtered);
