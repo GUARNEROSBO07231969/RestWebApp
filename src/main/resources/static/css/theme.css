@@ -14,9 +14,11 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-s
 
 /* KPI grid with ~30% reduction */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr) 220px;gap:4px !important;margin-bottom:0 !important}
-.kpi{background:var(--card);padding:14px;border-radius:14px;text-align:center}
+.kpi{background:#d1fae5 !important; padding:14px;border-radius:14px;text-align:center}
 .kpi span{font-size:14px;opacity:.85}
 .kpi strong{font-size:44px;display:block}
+.kpi.spent{background:#f97316 !important; color:#fff;}
+.kpi.total{background:#6ee7b7 !important; color:#166534 !important;}
 .cash{background:#22c55e;color:#fff}.visa{background:#2563eb;color:#fff}.spent{background:#f97316;color:#fff}.total{background:#9333ea;color:#fff}
 .chart-box{height:140px;min-height:120px;background:var(--card);border-radius:14px;padding:8px}
 
@@ -38,8 +40,8 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-s
 /* Table */
 .modern{width:100%;border-collapse:collapse;background:var(--table);border-radius:14px;overflow:hidden;margin-bottom:4px !important}
 .modern th{text-align:left;background:var(--table-head);padding:12px;font-size:13px;text-transform:uppercase}
-.modern td{padding:12px}
-.modern tr:nth-child(even){background:rgba(255,255,255,0.35)}
+.modern td:not(.footer-total){padding:2px 6px !important; height:14px !important; font-size:12px;}
+.modern tr:nth-child(even):not(.footer-total-row){background:rgba(255,255,255,0.35)}
 .action-btn{padding:6px 10px;border-radius:10px;border:none;font-size:13px}
 .edit-btn{background:#38bdf8;color:#fff}
 .delete-btn{background:#ef4444;color:#fff}
@@ -166,13 +168,13 @@ h3 {
 
 /* --- Modern Table Enhancements (Additive) --- */
 .modern th, .modern td {
-  padding: 2.5px 3px !important;
-  font-size: 11px;
-  line-height: 1.1;
+  padding: 6px 8px !important;
+  font-size: 12px !important;
+  line-height: 1.1 !important;
 }
 .modern td {
-  min-height: 18px;
-  height: 18px;
+  height: 28px !important;
+  padding: 2.5px 3px !important;
   vertical-align: middle;
 }
 .modern tr {
@@ -303,7 +305,7 @@ h3 {
   .kpi.cash { background: #22c55e !important; color: #fff !important; border: none !important; }
   .kpi.visa { background: #2563eb !important; color: #fff !important; border: none !important; }
   .kpi.spent { background: #f97316 !important; color: #fff !important; border: none !important; }
-  .kpi.total { background: #9333ea !important; color: #fff !important; border: none !important; }
+  .kpi.total { background: #059669 !important; color: #fff !important; border: none !important; }
   .kpi.net { background: #0ea5e9 !important; color: #fff !important; border: none !important; }
   /* Ensure all KPIs are the same width, height, and font size in print */
   .kpi {
@@ -343,6 +345,10 @@ h3 {
   font-size: 11px !important;
   height: 28px !important;
 }
+.pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 12px 0 0 0; }
+.pagination button { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
+.pagination button[disabled] { background: #a5b4fc; color: #e0e7ff; cursor: not-allowed; }
+.pagination button[style*='font-weight:bold'] { background: #1e40af; color: #fff; }
 .pagination .page-link, .pagination .page-item {
   min-width: 22px !important;
   min-height: 22px !important;
@@ -369,7 +375,7 @@ h3 {
 }
 /* Revert KPI total color to previous purple */
 .kpi.total {
-  background: #9333ea !important;
+  background: #059669 !important;
   color: #fff !important;
 }
 .kpi.net {
@@ -587,7 +593,7 @@ th[onclick]:hover {
   .kpi.cash { background: #22c55e !important; color: #fff !important; border: none !important; }
   .kpi.visa { background: #2563eb !important; color: #fff !important; border: none !important; }
   .kpi.spent { background: #f97316 !important; color: #fff !important; border: none !important; }
-  .kpi.total { background: #9333ea !important; color: #fff !important; border: none !important; }
+  .kpi.total { background: #059669 !important; color: #fff !important; border: none !important; }
   .kpi.net { background: #0ea5e9 !important; color: #fff !important; border: none !important; }
   /* Ensure all KPIs are the same width, height, and font size in print */
   .kpi {
@@ -723,4 +729,12 @@ th[onclick]:hover {
   border-radius: 2px;
   transition: left 0.3s cubic-bezier(.4,0,.2,1), width 0.3s cubic-bezier(.4,0,.2,1);
   z-index: 0;
+}
+/* Table footer totals row styling */
+.modern tfoot .footer-total-row td {
+  font-weight: bold;
+  background: #2563eb !important; /* blue */
+  color: #fff !important;
+  border-top: 2px solid #2563eb;
+  font-size: 1.08em;
 }

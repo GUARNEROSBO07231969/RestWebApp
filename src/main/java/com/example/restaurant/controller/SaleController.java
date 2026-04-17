@@ -30,7 +30,11 @@ public class SaleController {
         o.visaAmount = ((Number) b.getOrDefault("visaAmount", 0)).doubleValue();
         o.storeName = (String) b.getOrDefault("storeName", null);
         o.expenseAmount = b.get("expenseAmount") != null ? ((Number) b.get("expenseAmount")).doubleValue() : 0;
-        o.netSaleAmount = b.get("netSaleAmount") != null ? ((Number) b.get("netSaleAmount")).doubleValue() : o.cashAmount + o.visaAmount;
+        o.netsaleAmount = b.get("netsaleAmount") != null ? ((Number) b.get("netsaleAmount")).doubleValue() : o.cashAmount + o.visaAmount;
+        o.doordashAmount = b.get("doordashAmount") != null ? ((Number) b.get("doordashAmount")).doubleValue() : 0;
+        o.grubhubAmount = b.get("grubhubAmount") != null ? ((Number) b.get("grubhubAmount")).doubleValue() : 0;
+        o.ubereatsAmount = b.get("ubereatsAmount") != null ? ((Number) b.get("ubereatsAmount")).doubleValue() : 0;
+        o.onlineAmount = b.get("onlineAmount") != null ? ((Number) b.get("onlineAmount")).doubleValue() : 0;
         return s.save(o);
     }
 
@@ -42,7 +46,11 @@ public class SaleController {
         if (b.containsKey("visaAmount")) o.visaAmount = ((Number) b.get("visaAmount")).doubleValue();
         if (b.containsKey("storeName")) o.storeName = (String) b.get("storeName");
         if (b.containsKey("expenseAmount")) o.expenseAmount = b.get("expenseAmount") != null ? ((Number) b.get("expenseAmount")).doubleValue() : 0;
-        if (b.containsKey("netSaleAmount")) o.netSaleAmount = b.get("netSaleAmount") != null ? ((Number) b.get("netSaleAmount")).doubleValue() : o.cashAmount + o.visaAmount;
+        if (b.containsKey("netsaleAmount")) o.netsaleAmount = b.get("netsaleAmount") != null ? ((Number) b.get("netsaleAmount")).doubleValue() : o.cashAmount + o.visaAmount;
+        if (b.containsKey("doordashAmount")) o.doordashAmount = b.get("doordashAmount") != null ? ((Number) b.get("doordashAmount")).doubleValue() : 0;
+        if (b.containsKey("grubhubAmount")) o.grubhubAmount = b.get("grubhubAmount") != null ? ((Number) b.get("grubhubAmount")).doubleValue() : 0;
+        if (b.containsKey("ubereatsAmount")) o.ubereatsAmount = b.get("ubereatsAmount") != null ? ((Number) b.get("ubereatsAmount")).doubleValue() : 0;
+        if (b.containsKey("onlineAmount")) o.onlineAmount = b.get("onlineAmount") != null ? ((Number) b.get("onlineAmount")).doubleValue() : 0;
         return s.save(o);
     }
 

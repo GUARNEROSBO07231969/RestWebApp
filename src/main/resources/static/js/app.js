@@ -2,9 +2,9 @@ let chart, editId=null;
 const expenseAmount = document.getElementById('expenseAmount');
 function fmt(v){return '$'+Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function recalcTotal(){
-  const c=+cashAmount.value||0, v=+visaAmount.value||0, s=+expenseAmount.value||0;
-  calcTotal.value=fmt(c+v-s);
-  const net = +cashAmount.value + +visaAmount.value;
+  const c=+cashAmount.value||0, v=+visaAmount.value||0, d=+doordashAmount.value||0, g=+grubhubAmount.value||0, u=+ubereatsAmount.value||0, o=+onlineAmount.value||0, s=+expenseAmount.value||0;
+  calcTotal.value=fmt(c+v+d+g+u+o+s);
+  const net = c + v + d + g + u + o - s;
   netSaleAmount.value = fmt(net);
 }
  
@@ -66,7 +66,7 @@ async function loadData(){
   renderTable();
 }
 
-let searchTerm = '';
+let searchTerm = '', dateFrom = '', dateTo = '';
 
 function setupSearchInput() {
   const container = document.getElementById('search-container');
@@ -117,14 +117,27 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function getFilteredData() {
-  if (!searchTerm) return allData;
-  return allData.filter(x => {
+  let data = allData;
+  if (dateFrom || dateTo) {
+    data = data.filter(x => {
+      if (!x.date) return false;
+      let recordDate = x.date;
+      if (typeof recordDate !== 'string') recordDate = String(recordDate);
+      let dateOnly = recordDate.substring(0, 10).trim();
+      let inRange = true;
+      if (dateFrom && dateOnly < dateFrom) inRange = false;
+      if (dateTo && dateOnly > dateTo) inRange = false;
+      return inRange;
+    });
+  }
+  if (!searchTerm) return data;
+  return data.filter(x => {
     return (
-      (x.date && x.date.toLowerCase().includes(searchTerm)) ||
+      (x.date && String(x.date).toLowerCase().includes(searchTerm)) ||
       (x.storeName && x.storeName.toLowerCase().includes(searchTerm)) ||
       (x.cashAmount && fmt(x.cashAmount).toLowerCase().includes(searchTerm)) ||
       (x.visaAmount && fmt(x.visaAmount).toLowerCase().includes(searchTerm)) ||
-      (x.netSaleAmount && fmt(x.netSaleAmount).toLowerCase().includes(searchTerm)) ||
+      (x.netsaleAmount && fmt(x.netsaleAmount).toLowerCase().includes(searchTerm)) ||
       (x.expenseAmount && fmt(x.expenseAmount).toLowerCase().includes(searchTerm)) ||
       (x.totalAmount && fmt(x.totalAmount).toLowerCase().includes(searchTerm))
     );
@@ -134,6 +147,11 @@ function getFilteredData() {
 function filterTable() {
   const input = document.getElementById('tableSearch');
   searchTerm = input ? input.value.trim().toLowerCase() : '';
+  // Get date range values
+  const fromInput = document.getElementById('dateFrom');
+  const toInput = document.getElementById('dateTo');
+  dateFrom = fromInput && fromInput.value ? fromInput.value : '';
+  dateTo = toInput && toInput.value ? toInput.value : '';
   currentPage = 1;
   renderTable();
 }
@@ -141,50 +159,57 @@ function filterTable() {
 function renderTable() {
   const rows = document.getElementById('rows');
   const pagination = document.getElementById('pagination');
-  let c=0,v=0,s=0;
+  // Totals for footer
+  let totalCash=0, totalVisa=0, totalDoordash=0, totalGrubhub=0, totalUber=0, totalOnline=0, totalExpense=0, totalSale=0, totalNet=0;
   const filteredData = getFilteredData();
-  // Calculate grand totals from filteredData
   filteredData.forEach(x=>{
-    c+=x.cashAmount||0;
-    v+=x.visaAmount||0;
-    s+=(x.expenseAmount||0);
+    totalCash += x.cashAmount||0;
+    totalVisa += x.visaAmount||0;
+    totalDoordash += x.doordashAmount||0;
+    totalGrubhub += x.grubhubAmount||0;
+    totalUber += x.ubereatsAmount||0;
+    totalOnline += x.onlineAmount||0;
+    totalExpense += x.expenseAmount||0;
+    totalSale += (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
+    totalNet += (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
   });
-  const n = c + v; // total gross amount
-  const t = n - s; // total amount
   const start = (currentPage-1)*pageSize;
   const pageData = filteredData.slice(start, start+pageSize);
   rows.innerHTML = '';
   pageData.forEach(x=>{
-    const totalAmount = (x.cashAmount||0)+(x.visaAmount||0)-(x.expenseAmount||0);
-    const netAmount = x.netSaleAmount || ((x.cashAmount||0)+(x.visaAmount||0));
-    rows.innerHTML+=`<tr><td>${x.date??''}</td><td>${fmt(netAmount)}</td><td>${fmt(x.cashAmount)}</td><td>${fmt(x.visaAmount)}</td><td>${x.storeName??''}</td><td>${fmt(x.expenseAmount||0)}</td><td>${fmt(totalAmount)}</td><td><button class="action-btn edit-btn" onclick="editTx(${x.id},${netAmount},${x.cashAmount},${x.visaAmount},'${x.storeName??''}',${x.expenseAmount||0})">Edit</button> <button class="action-btn delete-btn" onclick="delTx(${x.id})">Delete</button></td></tr>`
+    const saleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
+    const netSaleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
+    rows.innerHTML+=`<tr>
+      <td>${x.date ? x.date.substring(0,10) : ''}</td>
+      <td>${fmt(x.cashAmount)}</td>
+      <td>${fmt(x.visaAmount)}</td>
+      <td>${fmt(x.doordashAmount||0)}</td>
+      <td>${fmt(x.grubhubAmount||0)}</td>
+      <td>${fmt(x.ubereatsAmount||0)}</td>
+      <td>${fmt(x.onlineAmount||0)}</td>
+      <td>${x.storeName??''}</td>
+      <td>${fmt(x.expenseAmount||0)}</td>
+      <td>${fmt(saleAmount)}</td>
+      <td><button class="action-btn edit-btn" onclick="editTx(${x.id},${netSaleAmount},${x.cashAmount},${x.visaAmount},${x.doordashAmount||0},${x.grubhubAmount||0},${x.ubereatsAmount||0},${x.onlineAmount||0},'${x.storeName??''}',${x.expenseAmount||0})">Edit</button> <button class="action-btn delete-btn" onclick="delTx(${x.id})">Delete</button></td>
+    </tr>`
   });
-  // Append grand total row as last row in the table
-  rows.innerHTML += `<tr class='grand-total-row'>
-    <td class='grand-label'>Grand Total</td>
-    <td>${fmt(n)}</td>
-    <td>${fmt(c)}</td>
-    <td>${fmt(v)}</td>
-    <td>&nbsp;</td>
-    <td>${fmt(s)}</td>
-    <td>${fmt(t)}</td>
-    <td>&nbsp;</td>
-  </tr>`;
-  renderPagination(filteredData.length);
-  updateSortIndicators();
-  netVal.textContent=fmt(n);spentVal.textContent=fmt(s);totalVal.textContent=fmt(t);
-  // --- KPI Percentages with labels and contrasting colors ---
-  // Gross Net Amount: always 100% (of itself)
-  const netPct = n > 0 ? 100 : 0;
-  // Expense: as % of gross net
-  const spentPct = n > 0 ? (s/n*100) : 0;
-  // Total Amount: profit margin % (total/gross net)
-  const totalPct = n > 0 ? (t/n*100) : 0;
-  // Set with label and color for contrast
-  document.getElementById('netPct').innerHTML = `<span style='color:#fff;background:#0ea5e9;padding:2px 8px;border-radius:8px;font-size:0.98em;font-weight:600;display:inline-block;margin-top:2px;'>Gross Margin: ${netPct.toFixed(0)}%</span>`;
-  document.getElementById('spentPct').innerHTML = `<span style='color:#fff;background:#f97316;padding:2px 8px;border-radius:8px;font-size:0.98em;font-weight:600;display:inline-block;margin-top:2px;'>Expense Ratio: ${spentPct.toFixed(1)}%</span>`;
-  document.getElementById('totalPct').innerHTML = `<span style='color:#fff;background:#9333ea;padding:2px 8px;border-radius:8px;font-size:0.98em;font-weight:600;display:inline-block;margin-top:2px;'>Profit Margin: ${totalPct.toFixed(1)}%</span>`;
+  // Update footer totals
+  document.getElementById('footer-cashAmount').textContent = fmt(totalCash);
+  document.getElementById('footer-visaAmount').textContent = fmt(totalVisa);
+  document.getElementById('footer-doordashAmount').textContent = fmt(totalDoordash);
+  document.getElementById('footer-grubhubAmount').textContent = fmt(totalGrubhub);
+  document.getElementById('footer-ubereatsAmount').textContent = fmt(totalUber);
+  document.getElementById('footer-onlineAmount').textContent = fmt(totalOnline);
+  document.getElementById('footer-expenseAmount').textContent = fmt(totalExpense);
+  document.getElementById('footer-saleAmount').textContent = fmt(totalSale);
+  // Update KPIs: Grand Total Expense and Grand Total Sales
+  spentVal.textContent = fmt(totalExpense);
+  totalVal.textContent = fmt(totalSale);
+  // Remove netVal and netPct logic
+  document.getElementById('spentPct').innerHTML = '';
+  document.getElementById('totalPct').innerHTML = '';
   if(chart) { chart.destroy(); chart = null; }
+  renderPagination(filteredData.length);
 }
 
 function renderPagination(dataLength) {
@@ -208,27 +233,46 @@ function gotoPage(page) {
   renderTable();
 }
 
-function editTx(id,net,c,v,store,s){editId=id;netSaleAmount.value=fmt(net);cashAmount.value=c;visaAmount.value=v;storeName.value=store||'';expenseAmount.value=s;recalcTotal()}
-function cancelEdit(){editId=null;netSaleAmount.value='';cashAmount.value='';visaAmount.value='';storeName.value='';expenseAmount.value='';calcTotal.value=''}
+function editTx(id,net,c,v,doordash,grubhub,ubereats,online,store,s){editId=id;netSaleAmount.value=fmt(net);cashAmount.value=c;visaAmount.value=v;doordashAmount.value=doordash;grubhubAmount.value=grubhub;ubereatsAmount.value=ubereats;onlineAmount.value=online;storeName.value=store||'';expenseAmount.value=s;recalcTotal()}
+function cancelEdit(){editId=null;netSaleAmount.value='';cashAmount.value='';visaAmount.value='';doordashAmount.value='';grubhubAmount.value='';ubereatsAmount.value='';onlineAmount.value='';storeName.value='';expenseAmount.value='';calcTotal.value=''}
 
 async function saveTx(){
   const expenseAmountInput = document.getElementById('expenseAmount');
-  const netSaleAmountInput = document.getElementById('netSaleAmount');
+  const doordashAmount = document.getElementById('doordashAmount');
+  const grubhubAmount = document.getElementById('grubhubAmount');
+  const ubereatsAmount = document.getElementById('ubereatsAmount');
+  const onlineAmount = document.getElementById('onlineAmount');
+  const c = +cashAmount.value||0, v = +visaAmount.value||0, d = +doordashAmount.value||0, g = +grubhubAmount.value||0, u = +ubereatsAmount.value||0, o = +onlineAmount.value||0, s = +expenseAmountInput.value||0;
+  const netsaleAmount = c + v + d + g + u + o - s;
   const body={
     restaurantId:+restaurantSelect.value,
-    cashAmount:+cashAmount.value||0,
-    visaAmount:+visaAmount.value||0,
+    cashAmount:c,
+    visaAmount:v,
     storeName:storeName.value||null,
-    netSaleAmount: +(netSaleAmountInput.value.replace(/[^\d.\-]/g, '')) || (+cashAmount.value||0)+(+visaAmount.value||0),
-    expenseAmount:+expenseAmountInput.value||0
+    netsaleAmount: netsaleAmount,
+    expenseAmount:s,
+    doordashAmount: d,
+    grubhubAmount: g,
+    ubereatsAmount: u,
+    onlineAmount: o,
   };
   if(editId){
     await fetch('/api/sales/'+editId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   }else{
     await fetch('/api/sales',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   }
-  cancelEdit();
   await loadData();
+  // Clear all input values after saving
+  cashAmount.value='';
+  visaAmount.value='';
+  doordashAmount.value='';
+  grubhubAmount.value='';
+  ubereatsAmount.value='';
+  onlineAmount.value='';
+  storeName.value='';
+  expenseAmount.value='';
+  calcTotal.value='';
+  editId=null;
 }
 async function delTx(id){await fetch('/api/sales/'+id,{method:'DELETE'});await loadData();}
 
@@ -237,7 +281,7 @@ document.addEventListener('DOMContentLoaded',loadRestaurants);
 let sortColumn = null, sortAsc = true;
 
 function updateSortIndicators() {
-  const columns = ['date','cashAmount','visaAmount','netSaleAmount','storeName','expenseAmount','totalAmount'];
+  const columns = ['date','cashAmount','visaAmount','netsaleAmount','doordashAmount','grubhubAmount','ubereatsAmount','onlineAmount','storeName','expenseAmount','totalAmount'];
   columns.forEach(col => {
     const el = document.getElementById('sort-' + col);
     if (!el) return;
@@ -422,14 +466,27 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function getFilteredData() {
-  if (!searchTerm) return allData;
-  return allData.filter(x => {
+  let data = allData;
+  if (dateFrom || dateTo) {
+    data = data.filter(x => {
+      if (!x.date) return false;
+      let recordDate = x.date;
+      if (typeof recordDate !== 'string') recordDate = String(recordDate);
+      let dateOnly = recordDate.substring(0, 10).trim();
+      let inRange = true;
+      if (dateFrom && dateOnly < dateFrom) inRange = false;
+      if (dateTo && dateOnly > dateTo) inRange = false;
+      return inRange;
+    });
+  }
+  if (!searchTerm) return data;
+  return data.filter(x => {
     return (
-      (x.date && x.date.toLowerCase().includes(searchTerm)) ||
+      (x.date && String(x.date).toLowerCase().includes(searchTerm)) ||
       (x.storeName && x.storeName.toLowerCase().includes(searchTerm)) ||
       (x.cashAmount && fmt(x.cashAmount).toLowerCase().includes(searchTerm)) ||
       (x.visaAmount && fmt(x.visaAmount).toLowerCase().includes(searchTerm)) ||
-      (x.netSaleAmount && fmt(x.netSaleAmount).toLowerCase().includes(searchTerm)) ||
+      (x.netsaleAmount && fmt(x.netsaleAmount).toLowerCase().includes(searchTerm)) ||
       (x.expenseAmount && fmt(x.expenseAmount).toLowerCase().includes(searchTerm)) ||
       (x.totalAmount && fmt(x.totalAmount).toLowerCase().includes(searchTerm))
     );
@@ -705,3 +762,45 @@ function printSupplierExcel() {
     URL.revokeObjectURL(url);
   }, 100);
 }
+
+// Remove arrows from number inputs
+window.addEventListener('DOMContentLoaded',()=>{
+  ['doordashAmount','grubhubAmount','ubereatsAmount','onlineAmount'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.setAttribute('inputmode','decimal');el.setAttribute('pattern','[0-9]*');el.addEventListener('wheel',e=>e.target.blur());}
+  });
+});
+
+function setDateRange(range) {
+  const fromInput = document.getElementById('dateFrom');
+  const toInput = document.getElementById('dateTo');
+  const today = new Date();
+  let from, to;
+  if (range === 'today') {
+    from = to = today;
+  } else if (range === 'week') {
+    const day = today.getDay();
+    from = new Date(today);
+    from.setDate(today.getDate() - day);
+    to = new Date(today);
+    to.setDate(from.getDate() + 6);
+  } else if (range === 'month') {
+    from = new Date(today.getFullYear(), today.getMonth(), 1);
+    to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  } else if (range === 'year') {
+    from = new Date(today.getFullYear(), 0, 1);
+    to = new Date(today.getFullYear(), 11, 31);
+  }
+  // Format as yyyy-mm-dd
+  const fmt = d => d.toISOString().slice(0, 10);
+  fromInput.value = fmt(from);
+  toInput.value = fmt(to);
+  filterTable();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var from = document.getElementById('dateFrom');
+  var to = document.getElementById('dateTo');
+  if (from) from.addEventListener('change', filterTable);
+  if (to) to.addEventListener('change', filterTable);
+});

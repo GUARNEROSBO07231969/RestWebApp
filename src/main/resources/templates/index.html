@@ -29,23 +29,13 @@
   <!-- Only Sales and Supplier Expenses tab content sections -->
   <div id="tabContentSales" class="tab-content">
     <div class="kpi-grid">
-      <div class="kpi net" style="font-size:0.75rem !important;padding:10px 10px 8px 10px;min-width:0;min-height:0;position:relative;">
-        <span style="font-size:0.99rem !important;">Grand Gross Net Amount</span>
-        <strong id="netVal" style="font-size:1.45rem !important;color:#fff;text-shadow:0 1px 8px #0ea5e9,0 1px 1px #222;cursor:pointer;">$0</strong>
-        <div id="netKpiTooltip" style="display:none;position:absolute;left:100%;top:50%;transform:translateY(-50%) translateX(12px);z-index:99999;background:#fff;color:#222;border-radius:7px;padding:5px 12px;box-shadow:0 2px 10px #0003;font-size:0.44rem;min-width:72px;text-align:left;white-space:nowrap;">
-          <div style="margin-bottom:2px;font-weight:600;font-size:0.56em;">Contribution</div>
-          <div style="color:#0ea5e9;font-weight:700;letter-spacing:0.5px;font-size:0.58em;">🟦 <span style='color:#0ea5e9;'>Cash</span>: <span id="tooltipCashPct">0%</span></div>
-          <div style="color:#6366f1;font-weight:700;letter-spacing:0.5px;font-size:0.58em;">🟪 <span style='color:#6366f1;'>Visa</span>: <span id="tooltipVisaPct">0%</span></div>
-        </div>
-        <span class="kpi-pct" id="netPct" style="font-size:0.78em !important;"></span>
-      </div>
       <div class="kpi spent" style="font-size:0.75rem !important;padding:10px 10px 8px 10px;min-width:0;min-height:0;">
         <span style="font-size:0.99rem !important;">Grand Total Expense</span>
         <strong id="spentVal" style="font-size:1.45rem !important;color:#fff;text-shadow:0 1px 8px #f59e42,0 1px 1px #222;">$0</strong>
         <span class="kpi-pct" id="spentPct" style="font-size:0.78em !important;"></span>
       </div>
       <div class="kpi total" style="font-size:0.75rem !important;padding:10px 10px 8px 10px;min-width:0;min-height:0;">
-        <span style="font-size:0.99rem !important;">Grand Total Amount</span>
+        <span style="font-size:0.99rem !important;">Grand Total Sales</span>
         <strong id="totalVal" style="font-size:1.45rem !important;color:#fff;text-shadow:0 1px 8px #22c55e,0 1px 1px #222;">$0</strong>
         <span class="kpi-pct" id="totalPct" style="font-size:0.78em !important;"></span>
       </div>
@@ -53,12 +43,15 @@
 
     <h3>Add / Edit Transaction</h3>
     <div class="form-grid modern-inputs single-row-form">
-      <div class="input-group readonly"><span class="input-icon">💹</span><input id="netSaleAmount" readonly placeholder=" "><label>Gross Net Amount</label></div>
       <div class="input-group"><span class="input-icon">💵</span><input id="cashAmount" placeholder=" " oninput="recalcTotal()"><label>Cash Amount</label></div>
       <div class="input-group"><span class="input-icon">💳</span><input id="visaAmount" placeholder=" " oninput="recalcTotal()"><label>Visa Amount</label></div>
+      <div class="input-group"><span class="input-icon">🍔</span><input id="doordashAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Doordash Amount</label></div>
+      <div class="input-group"><span class="input-icon">🍟</span><input id="grubhubAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Grubhub Amount</label></div>
+      <div class="input-group"><span class="input-icon">🚗</span><input id="ubereatsAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>UberEats Amount</label></div>
+      <div class="input-group"><span class="input-icon">🌐</span><input id="onlineAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Online Amount</label></div>
       <div class="input-group"><span class="input-icon">🏬</span><input id="storeName" placeholder=" "><label>Store Name</label></div>
       <div class="input-group"><span class="input-icon">💸</span><input id="expenseAmount" placeholder=" " oninput="recalcTotal()"><label>Expense Amount</label></div>
-      <div class="input-group readonly"><span class="input-icon">📊</span><input id="calcTotal" readonly placeholder=" "><label>Total Amount</label></div>
+      <div class="input-group readonly"><span class="input-icon">📊</span><input id="calcTotal" readonly placeholder=" "><label>Sale Amount</label></div>
       <div class="btn-row" style="align-self:end;display:flex;gap:8px;margin-left:8px;">
         <button class="btn btn-primary" onclick="saveTx()">💾 Save</button>
         <button class="btn btn-secondary" onclick="cancelEdit()">✖ Cancel</button>
@@ -70,6 +63,17 @@
       <button class="btn btn-secondary" onclick="printExcel()">📥 Print Excel</button>
     </div>
 
+    <div class="date-range-filter" style="display:flex;flex-direction:row;align-items:center;justify-content:flex-start;margin-bottom:8px;gap:10px;">
+      <label for="dateFrom" style="font-size:0.95em;font-weight:600;margin-bottom:0;">From</label>
+      <input id="dateFrom" type="date" style="width:120px;padding:4px 8px;font-size:0.95em;border-radius:6px;border:1px solid #cbd5e1;" onchange="filterTable()" placeholder="MM/DD/YYYY">
+      <label for="dateTo" style="font-size:0.95em;font-weight:600;margin-bottom:0;">To</label>
+      <input id="dateTo" type="date" style="width:120px;padding:4px 8px;font-size:0.95em;border-radius:6px;border:1px solid #cbd5e1;" onchange="filterTable()" placeholder="MM/DD/YYYY">
+      <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('today')">Today</button>
+      <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('week')">This Week</button>
+      <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('month')">This Month</button>
+      <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('year')">This Year</button>
+    </div>
+
     <div class="search-row" style="margin-bottom:4px;display:flex;align-items:center;gap:8px">
       <input id="tableSearch" type="text" placeholder="🔍 Search table..." style="flex:1;max-width:260px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;font-size:13px;" oninput="filterTable()">
     </div>
@@ -78,16 +82,32 @@
       <thead>
         <tr>
           <th onclick="sortTable('date')" style="cursor:pointer" title="Sort by Date">Date <span class="sort-indicator" id="sort-date"></span></th>
-          <th onclick="sortTable('netSaleAmount')" style="cursor:pointer" title="Sort by Gross Net Amount">Gross Net Amount <span class="sort-indicator" id="sort-netSaleAmount"></span></th>
           <th onclick="sortTable('cashAmount')" style="cursor:pointer" title="Sort by Cash Amount">Cash Amount <span class="sort-indicator" id="sort-cashAmount"></span></th>
           <th onclick="sortTable('visaAmount')" style="cursor:pointer" title="Sort by Visa Amount">Visa Amount <span class="sort-indicator" id="sort-visaAmount"></span></th>
+          <th onclick="sortTable('doordashAmount')" style="cursor:pointer" title="Sort by Doordash Amount">Doordash Amount <span class="sort-indicator" id="sort-doordashAmount"></span></th>
+          <th onclick="sortTable('grubhubAmount')" style="cursor:pointer" title="Sort by Grubhub Amount">Grubhub Amount <span class="sort-indicator" id="sort-grubhubAmount"></span></th>
+          <th onclick="sortTable('ubereatsAmount')" style="cursor:pointer" title="Sort by UberEats Amount">UberEats Amount <span class="sort-indicator" id="sort-ubereatsAmount"></span></th>
+          <th onclick="sortTable('onlineAmount')" style="cursor:pointer" title="Sort by Online Amount">Online Amount <span class="sort-indicator" id="sort-onlineAmount"></span></th>
           <th onclick="sortTable('storeName')" style="cursor:pointer" title="Sort by Store Name">Store Name <span class="sort-indicator" id="sort-storeName"></span></th>
-          <th onclick="sortTable('spent')" style="cursor:pointer" title="Sort by Expense Amount">Expense Amount <span class="sort-indicator" id="sort-spent"></span></th>
-          <th onclick="sortTable('totalAmount')" style="cursor:pointer" title="Sort by Total Amount">Total Amount <span class="sort-indicator" id="sort-totalAmount"></span></th>
-          <th>Actions</th>
+          <th onclick="sortTable('expenseAmount')" style="cursor:pointer" title="Sort by Expense Amount">Expense Amount <span class="sort-indicator" id="sort-expenseAmount"></span></th>
+          <th onclick="sortTable('totalAmount')" style="cursor:pointer" title="Sort by Sale Amount">Sale Amount <span class="sort-indicator" id="sort-totalAmount"></span></th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
+      <tfoot>
+        <tr class="footer-total-row">
+          <td>Totals</td>
+          <td id="footer-cashAmount"></td>
+          <td id="footer-visaAmount"></td>
+          <td id="footer-doordashAmount"></td>
+          <td id="footer-grubhubAmount"></td>
+          <td id="footer-ubereatsAmount"></td>
+          <td id="footer-onlineAmount"></td>
+          <td></td>
+          <td id="footer-expenseAmount"></td>
+          <td id="footer-saleAmount"></td>
+        </tr>
+      </tfoot>
     </table>
     <div id="grand-total-row-container"></div>
     <div id="pagination" class="pagination"></div>
