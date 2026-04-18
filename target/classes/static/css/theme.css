@@ -210,27 +210,18 @@ h3 {
   box-shadow: 0 2px 8px 0 rgba(37,99,235,0.10);
 }
 .grand-total-row td {
-  background: #cbd5e1 !important; /* slightly darker blue-gray for grand total */
-  color: #1e293b !important;
+  background: none !important;
+  color: #222 !important;
+  border-top: 2px solid #6ee7b7 !important;
   font-weight: bold !important;
   text-align: left !important;
   font-size: 11px !important;
   padding: 2.5px 3px !important;
 }
 .grand-total-row td.grand-label {
+  background: none !important;
+  color: #166534 !important;
   font-weight: bold !important;
-}
-.grand-total-row td:first-child {
-  text-align: left !important;
-  border-top-left-radius: 10px !important;
-  border-bottom-left-radius: 10px !important;
-}
-.grand-total-row td:last-child {
-  border-top-right-radius: 10px !important;
-  border-bottom-right-radius: 10px !important;
-}
-.grand-total-row td:nth-child(2) {
-  text-align: left !important;
 }
 @media print {
   .kpi-grid {
@@ -733,8 +724,38 @@ th[onclick]:hover {
 /* Table footer totals row styling */
 .modern tfoot .footer-total-row td {
   font-weight: bold;
-  background: #2563eb !important; /* blue */
-  color: #fff !important;
-  border-top: 2px solid #2563eb;
+  border-top: 2px solid #6ee7b7; /* green border to match green background */
   font-size: 1.08em;
+  color: #222 !important; /* black font for totals row */
+}
+.footer-green, .footer-total-row td, .grand-total-row td:not(#footer-expenseAmount):not(.grand-label) {
+  background: #6ee7b7 !important;
+  color: #166534 !important;
+  font-weight: bold !important;
+}
+.footer-orange, .footer-total-row td#footer-expenseAmount, .grand-total-row td#footer-expenseAmount {
+  background: #f97316 !important;
+  color: #fff !important;
+  font-weight: bold !important;
+}
+/* --- Grand total row for supplier expenses table --- */
+.grand-total-row td,
+.grand-total-row td.grand-label,
+.grand-total-row td#footer-expenseAmount {
+  background: none !important;
+  color: #222 !important;
+  border-top: 2px solid #6ee7b7 !important;
+  font-weight: bold !important;
+  text-align: left !important;
+  font-size: 11px !important;
+  padding: 2.5px 3px !important;
+}
+/* Remove green and orange backgrounds from grand total row in supplier expenses table */
+.footer-green.grand-total-row td,
+.footer-orange.grand-total-row td#footer-expenseAmount,
+.grand-total-row td:not(.grand-label):not(#footer-expenseAmount),
+.grand-total-row td.grand-label,
+.grand-total-row td#footer-expenseAmount {
+  background: none !important;
+  color: #222 !important;
 }
