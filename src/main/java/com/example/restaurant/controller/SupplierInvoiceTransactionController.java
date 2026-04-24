@@ -1,7 +1,9 @@
 package com.example.restaurant.controller;
 
+import com.example.restaurant.model.Restaurant;
 import com.example.restaurant.model.SupplierInvoiceTransaction;
 import com.example.restaurant.repository.SupplierInvoiceTransactionRepository;
+import com.example.restaurant.service.RestaurantSecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,12 +14,24 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/suppliers")
 public class SupplierInvoiceTransactionController {
+    private final SupplierInvoiceTransactionRepository repository;
+    private final RestaurantSecurityService securityService;
+
     @Autowired
-    private SupplierInvoiceTransactionRepository repository;
+    public SupplierInvoiceTransactionController(SupplierInvoiceTransactionRepository repository, RestaurantSecurityService securityService) {
+        this.repository = repository;
+        this.securityService = securityService;
+    }
 
     @GetMapping
     public List<SupplierInvoiceTransaction> getByRestaurant(@RequestParam Long restaurantId) {
-        return repository.findByRestaurantId(restaurantId);
+        if (securityService.isSuperAdmin()) {
+            return repository.findByRestaurantId(restaurantId);
+        } else {
+            Restaurant current = securityService.getCurrentUserRestaurant();
+            if (current == null || !current.getId().equals(restaurantId)) return List.of();
+            return repository.findByRestaurantId(current.getId());
+        }
     }
 
     @PostMapping

@@ -2,6 +2,7 @@ package com.example.restaurant.controller;
 
 import com.example.restaurant.repository.*;
 import com.example.restaurant.model.*;
+import com.example.restaurant.service.RestaurantSecurityService;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
@@ -10,15 +11,23 @@ import java.util.*;
 public class SaleController {
     private final SaleRepository s;
     private final RestaurantRepository r;
+    private final RestaurantSecurityService securityService;
 
-    public SaleController(SaleRepository s, RestaurantRepository r) {
+    public SaleController(SaleRepository s, RestaurantRepository r, RestaurantSecurityService securityService) {
         this.s = s;
         this.r = r;
+        this.securityService = securityService;
     }
 
     @GetMapping
     public List<Sale> all(@RequestParam Long restaurantId) {
-        return s.findByRestaurant(r.findById(restaurantId).orElseThrow());
+        if (securityService.isSuperAdmin()) {
+            return s.findByRestaurant(r.findById(restaurantId).orElseThrow());
+        } else {
+            Restaurant current = securityService.getCurrentUserRestaurant();
+            if (current == null || !current.getId().equals(restaurantId)) return List.of();
+            return s.findByRestaurant(current);
+        }
     }
 
     @PostMapping

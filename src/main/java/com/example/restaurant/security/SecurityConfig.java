@@ -2,19 +2,15 @@ package com.example.restaurant.security;
 
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.*;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
-    @Bean
-    UserDetailsService users() {
-        return new InMemoryUserDetailsManager(
-            User.withUsername("demo").password("{noop}demo").roles("USER").build()
-        );
+    private final UserDetailsService userDetailsService;
+    public SecurityConfig(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
     }
-
     @Bean
     SecurityFilterChain filter(HttpSecurity h) throws Exception {
         h.csrf(c -> c.disable())
@@ -27,7 +23,8 @@ public class SecurityConfig {
              .permitAll()
              .defaultSuccessUrl("/", true)
          )
-         .logout(l -> l.permitAll());
+         .logout(l -> l.permitAll())
+         .userDetailsService(userDetailsService);
         return h.build();
     }
 }
