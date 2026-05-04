@@ -22,10 +22,10 @@
 
   <!-- Tab menu: only Sales and Supplier Expenses tabs -->
   <ul class="tab-menu">
-    <li id="tabSales" class="tab tab-active" onclick="switchTab('sales')">Sales</li>
-    <li id="tabSuppliers" class="tab" onclick="switchTab('suppliers')">Supplier Expenses</li>
-    <div class="tab-slider"></div>
-  </ul>
+      <li id="tabSales" class="tab tab-active" onclick="switchTab('sales')"><span class="tab-icon">💰</span>Sales</li>
+      <li id="tabSuppliers" class="tab" onclick="switchTab('suppliers')"><span class="tab-icon">📦</span>Supplier Expenses</li>
+      <div class="tab-slider" id="tabSlider"></div>
+    </ul>
   <!-- Only Sales and Supplier Expenses tab content sections -->
   <div id="tabContentSales" class="tab-content">
     <div class="kpi-grid">
@@ -81,16 +81,16 @@
     <table class="modern">
       <thead>
         <tr>
-          <th onclick="sortTable('date')" style="cursor:pointer" title="Sort by Date">Date <span class="sort-indicator" id="sort-date"></span></th>
-          <th onclick="sortTable('cashAmount')" style="cursor:pointer" title="Sort by Cash Amount">Cash Amount <span class="sort-indicator" id="sort-cashAmount"></span></th>
-          <th onclick="sortTable('visaAmount')" style="cursor:pointer" title="Sort by Visa Amount">Visa Amount <span class="sort-indicator" id="sort-visaAmount"></span></th>
-          <th onclick="sortTable('doordashAmount')" style="cursor:pointer" title="Sort by Doordash Amount">Doordash Amount <span class="sort-indicator" id="sort-doordashAmount"></span></th>
-          <th onclick="sortTable('grubhubAmount')" style="cursor:pointer" title="Sort by Grubhub Amount">Grubhub Amount <span class="sort-indicator" id="sort-grubhubAmount"></span></th>
-          <th onclick="sortTable('ubereatsAmount')" style="cursor:pointer" title="Sort by UberEats Amount">UberEats Amount <span class="sort-indicator" id="sort-ubereatsAmount"></span></th>
-          <th onclick="sortTable('onlineAmount')" style="cursor:pointer" title="Sort by Online Amount">Online Amount <span class="sort-indicator" id="sort-onlineAmount"></span></th>
-          <th onclick="sortTable('storeName')" style="cursor:pointer" title="Sort by Store Name">Store Name <span class="sort-indicator" id="sort-storeName"></span></th>
-          <th onclick="sortTable('expenseAmount')" style="cursor:pointer" title="Sort by Expense Amount">Expense Amount <span class="sort-indicator" id="sort-expenseAmount"></span></th>
-          <th onclick="sortTable('totalAmount')" style="cursor:pointer" title="Sort by Sale Amount">Sale Amount <span class="sort-indicator" id="sort-totalAmount"></span></th>
+          <th onclick="sortTable('date')" style="cursor:pointer;background:var(--table-head);" title="Sort by Date">Date <span class="sort-indicator" id="sort-date"></span></th>
+          <th onclick="sortTable('cashAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Cash Amount">Cash Amount <span class="sort-indicator" id="sort-cashAmount"></span></th>
+          <th onclick="sortTable('visaAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Visa Amount">Visa Amount <span class="sort-indicator" id="sort-visaAmount"></span></th>
+          <th onclick="sortTable('doordashAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Doordash Amount">Doordash Amount <span class="sort-indicator" id="sort-doordashAmount"></span></th>
+          <th onclick="sortTable('grubhubAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Grubhub Amount">Grubhub Amount <span class="sort-indicator" id="sort-grubhubAmount"></span></th>
+          <th onclick="sortTable('ubereatsAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by UberEats Amount">UberEats Amount <span class="sort-indicator" id="sort-ubereatsAmount"></span></th>
+          <th onclick="sortTable('onlineAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Online Amount">Online Amount <span class="sort-indicator" id="sort-onlineAmount"></span></th>
+          <th onclick="sortTable('storeName')" style="cursor:pointer;background:var(--table-head);" title="Sort by Store Name">Store Name <span class="sort-indicator" id="sort-storeName"></span></th>
+          <th onclick="sortTable('expenseAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Expense Amount">Expense Amount <span class="sort-indicator" id="sort-expenseAmount"></span></th>
+          <th onclick="sortTable('totalAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Sale Amount">Sale Amount <span class="sort-indicator" id="sort-totalAmount"></span></th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
@@ -154,6 +154,17 @@
         </tr>
       </thead>
       <tbody id="supplierRows"></tbody>
+      <tfoot>
+        <tr class="grand-total-row">
+          <td class="grand-label">Grand Total</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td id="supplier-grand-total" style="text-align:right;"></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tfoot>
     </table>
     <div id="supplierPagination" class="pagination"></div>
   </div>

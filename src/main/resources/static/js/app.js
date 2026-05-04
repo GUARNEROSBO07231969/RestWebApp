@@ -187,7 +187,7 @@ function renderTable() {
   pageData.forEach(x=>{
     const saleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
     const netSaleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
-    const highlight = (editId === x.id) ? ' style="background:#2563eb !important;color:#fff !important;border:2.5px solid #facc15 !important;box-shadow:0 0 8px #facc15;"' : '';
+    const highlight = (editId === x.id) ? ' style="background:#38bdf8 !important;color:#fff !important;border:2.5px solid #2563eb !important;box-shadow:0 0 8px #2563eb;"' : '';
     rows.innerHTML+=`<tr${highlight}>
       <td>${x.date ? x.date.substring(0,10) : ''}</td>
       <td>${fmt(x.cashAmount)}</td>
@@ -588,7 +588,7 @@ function renderSupplierTable() {
   const pageData = filtered.slice(start, start + supplierPageSize);
   pageData.forEach((row) => {
     totalAmount += Number(row.invoiceAmount) || 0;
-    const highlight = (supplierEditId === row.id) ? ' style="background:#2563eb !important;color:#fff !important;border:2.5px solid #facc15 !important;box-shadow:0 0 8px #facc15;"' : '';
+    const highlight = (supplierEditId === row.id) ? ' style="background:#38bdf8 !important;color:#fff !important;border:2.5px solid #2563eb !important;box-shadow:0 0 8px 0 rgba(37,99,235,0.2);"' : '';
     tbody.innerHTML += `<tr${highlight}>
       <td>${row.supplierName}</td>
       <td>${row.transactionDate}</td>
@@ -602,9 +602,10 @@ function renderSupplierTable() {
       </td>
     </tr>`;
   });
-  // Add grand total row
-  if (filtered.length > 0) {
-    tbody.innerHTML += `<tr class='grand-total-row' style=\"background:#f97316 !important;color:#fff !important;font-size:1.08em;font-weight:bold;border-top:3px solid #ea580c;box-shadow:0 2px 8px 0 rgba(234,88,12,0.10);\">\n      <td class='grand-label' style=\"font-weight:bold !important; color:#fff !important;\">Grand Total</td>\n      <td></td>\n      <td></td>\n      <td></td>\n      <td style=\"background:#f97316 !important;color:#fff !important;font-weight:bold !important;text-align:left !important;font-size:11px !important;padding:2.5px 3px !important;\"><strong>$${totalAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td>\n      <td></td>\n      <td></td>\n    </tr>`;
+  // Set grand total in the tfoot
+  const grandTotalCell = document.getElementById('supplier-grand-total');
+  if (grandTotalCell) {
+    grandTotalCell.textContent = `$${totalAmount.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2})}`;
   }
   renderSupplierPagination(filtered.length);
   renderSupplierKpiAndGraphs(filtered);

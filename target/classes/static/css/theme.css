@@ -210,13 +210,16 @@ h3 {
   box-shadow: 0 2px 8px 0 rgba(37,99,235,0.10);
 }
 .grand-total-row td {
-  background: none !important;
-  color: #222 !important;
-  border-top: 2px solid #6ee7b7 !important;
-  font-weight: bold !important;
+  background: #60a5fa !important; /* Professional blue highlight */
+  color: #1e293b !important;
+  border-top: 2.5px solid #2563eb !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px #2563eb22;
   text-align: left !important;
-  font-size: 11px !important;
-  padding: 2.5px 3px !important;
+  padding: 6px 8px !important;
+  font-family: 'Segoe UI', 'Inter', Arial, sans-serif !important;
 }
 .grand-total-row td.grand-label {
   background: none !important;
@@ -607,155 +610,141 @@ th[onclick]:hover {
   }
 }
 
-/* Make Dashboard and edit/delete labels smaller for better fit */
-.dashboard-title, h1.dashboard-title, h2.dashboard-title, h3.dashboard-title {
-  font-size: 1.05rem !important;
-  font-weight: 700 !important;
-  margin-bottom: 4px !important;
-  letter-spacing: 0.01em;
+/* --- Folder-style tabs with professional transitions, always on the same row --- */
+.tab-menu {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  border-bottom: 3px solid #2563eb;
+  background: #f1f5f9;
+  padding: 0;
+  margin-bottom: 0;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 2px 8px #2563eb11;
+  gap: 0;
 }
-.edit-btn, .delete-btn {
-  font-size: 10px !important;
-  padding: 3px 7px !important;
-  min-width: 32px !important;
-  border-radius: 6px !important;
+.tab {
+  position: relative;
+  top: 2px;
+  padding: 7.5px 20px 4.5px 20px; /* compact, folder style */
+  font-size: 0.85rem;
+  background: linear-gradient(180deg, #e0e7ef 80%, #f1f5f9 100%);
+  border: none;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  margin-right: 0;
+  color: #2563eb;
+  font-weight: 600;
+  transition: background 0.35s cubic-bezier(.4,0,.2,1), color 0.18s, box-shadow 0.35s cubic-bezier(.4,0,.2,1), transform 0.18s;
+  box-shadow: 0 2px 8px #2563eb11, 0 6px 24px #3b82f611 inset;
+  z-index: 2;
+  outline: none;
+  overflow: hidden;
 }
-.dashboard-title-container {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px #0001;
-  padding: 24px 48px;
-  margin: 32px auto 32px auto;
-  max-width: 1100px;
-  text-align: center;
-  font-family: inherit;
-  font-size: 2.2rem;
+.tab .tab-icon {
+  font-size: 1em;
+  margin-right: 5px;
+  filter: drop-shadow(0 1px 2px #3b82f6cc);
+  transition: filter 0.3s, color 0.3s, transform 0.3s;
+}
+.tab.tab-active {
+  background: linear-gradient(180deg, #3b82f6 0%, #fff 100%);
+  color: #1e293b;
+  border-bottom: 3px solid #fff;
+  box-shadow: 0 -2px 16px #2563eb22, 0 2px 8px #2563eb11, 0 8px 32px #a5b4fc22 inset;
   font-weight: 700;
-  color: #222;
-  letter-spacing: 0.5px;
+  z-index: 3;
+  transform: translateY(-2px) scale(1.06);
+  animation: tabHighlightFadeBlue 0.5s;
 }
-.dashboard-title-container .dashboard-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  margin: 0;
-  font-family: inherit;
+@keyframes tabHighlightFadeBlue {
+  0% { background: #3b82f6; }
+  60% { background: #3b82f6; }
+  100% { background: linear-gradient(180deg, #fff 70%, #dbeafe 100%); }
 }
-.tab-menu, .tab {
-  font-family: inherit;
+.tab.tab-active .tab-icon {
+  color: #3b82f6;
+  filter: drop-shadow(0 0 8px #a5b4fc);
+  transform: scale(1.18) rotate(-8deg);
 }
-.tab-menu {
-  position: relative;
-  display: flex;
-  border-bottom: 2px solid #e5e7eb;
-  background: transparent; /* tab bar is now transparent */
-  padding: 0;
-  margin-bottom: 16px;
-  list-style: none;
-}
-.tab {
-  position: relative;
-  padding: 12px 32px;
-  cursor: pointer;
-  font-size: 1rem;
-  background: none;
-  border: none;
-  outline: none;
-  color: #374151;
-  transition: color 0.2s, background 0.2s;
-  z-index: 1;
-  list-style: none;
-}
-.tab.tab-active {
-  color: #fff;
-  background: #2563eb;
-  font-weight: bold;
-  border-radius: 12px 12px 0 0;
+.tab:not(.tab-active):hover, .tab:focus-visible {
+  background: linear-gradient(180deg, #dbeafe 80%, #e0e7ef 100%);
+  color: #1e40af;
+  box-shadow: 0 4px 16px #2563eb22, 0 2px 8px #a5b4fc11;
+  transform: translateY(-1px) scale(1.02);
 }
 .tab-slider {
   position: absolute;
-  bottom: 0;
+  bottom: -3px;
   left: 0;
-  height: 3px;
+  height: 5px;
   width: 0;
-  background: #2563eb;
-  border-radius: 2px;
-  transition: left 0.3s cubic-bezier(.4,0,.2,1), width 0.3s cubic-bezier(.4,0,.2,1);
-  z-index: 0;
+  background: linear-gradient(90deg, #3b82f6 0%, #a78bfa 100%);
+  border-radius: 2px 2px 0 0;
+  transition: left 0.35s cubic-bezier(.4,0,1,1.4), width 0.35s cubic-bezier(.4,0,1,1.4);
+  z-index: 4;
+  display: block !important;
+  animation: tabSliderBounce 0.5s;
 }
-.tab-menu {
-  position: relative;
-  display: flex;
-  border-bottom: 2px solid #e5e7eb;
-  background: transparent; /* tab bar is now transparent */
-  padding: 0;
-  margin-bottom: 16px;
+@keyframes tabSliderBounce {
+  0% { height: 3px; }
+  50% { height: 8px; }
+  100% { height: 5px; }
 }
-.tab {
-  position: relative;
-  padding: 12px 32px;
-  cursor: pointer;
-  font-size: 1rem;
-  background: none;
-  border: none;
-  outline: none;
-  color: #374151;
-  transition: color 0.2s, background 0.2s;
+.tab-content {
+  background: #fff;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 2px 12px #2563eb11;
+  border: 2.5px solid transparent;
+  border-top: none;
+  padding: 10px 10px 5px 10px;
+  margin-top: -2px;
   z-index: 1;
-  list-style: none;
+  animation: tabContentFadeIn 0.35s cubic-bezier(.4,0,.2,1);
 }
-.tab.tab-active {
-  color: #fff;
-  background: #2563eb;
-  font-weight: bold;
-  border-radius: 12px 12px 0 0;
+@keyframes tabContentFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.tab-slider {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  width: 0;
-  background: #2563eb;
-  border-radius: 2px;
-  transition: left 0.3s cubic-bezier(.4,0,.2,1), width 0.3s cubic-bezier(.4,0,.2,1);
-  z-index: 0;
-}
-/* Table footer totals row styling */
-.modern tfoot .footer-total-row td {
-  font-weight: bold;
-  border-top: 2px solid #6ee7b7; /* green border to match green background */
-  font-size: 1.08em;
-  color: #222 !important; /* black font for totals row */
-}
-.footer-green, .footer-total-row td, .grand-total-row td:not(#footer-expenseAmount):not(.grand-label) {
-  background: #6ee7b7 !important;
-  color: #166534 !important;
-  font-weight: bold !important;
-}
-.footer-orange, .footer-total-row td#footer-expenseAmount, .grand-total-row td#footer-expenseAmount {
-  background: #f97316 !important;
+
+/* --- Remove all gradient backgrounds for grand/grand total/totals rows and enforce solid blue --- */
+.footer-total-row td,
+.footer-total-row td#footer-expenseAmount,
+.grand-total-row td,
+.grand-total-row td#footer-expenseAmount,
+.grand-total-row td.grand-label {
+  background: #3b82f6 !important;
   color: #fff !important;
-  font-weight: bold !important;
+  font-weight: 700 !important;
+  border-top: 2.5px solid #2563eb !important;
+  font-size: 12px !important;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px #2563eb22;
+  text-align: left !important;
+  padding: 6px 8px !important;
+  font-family: 'Segoe UI', 'Inter', Arial, sans-serif !important;
 }
-/* --- Grand total row for supplier expenses table --- */
+
+/* Remove any previous gradient backgrounds for these rows */
+.footer-total-row td,
 .grand-total-row td,
 .grand-total-row td.grand-label,
 .grand-total-row td#footer-expenseAmount {
-  background: none !important;
-  color: #222 !important;
-  border-top: 2px solid #6ee7b7 !important;
-  font-weight: bold !important;
-  text-align: left !important;
-  font-size: 11px !important;
-  padding: 2.5px 3px !important;
+  background-image: none !important;
 }
-/* Remove green and orange backgrounds from grand total row in supplier expenses table */
-.footer-green.grand-total-row td,
-.footer-orange.grand-total-row td#footer-expenseAmount,
+
+/* Optionally, you can comment out or remove the old gradient rules below if you want to keep the file clean */
+/*
+.footer-total-row td {
+  background: linear-gradient(90deg, #e0e7ef 0%, #3b82f6 100%) !important;
+  color: #1e293b !important;
+  ...
+}
 .grand-total-row td:not(.grand-label):not(#footer-expenseAmount),
 .grand-total-row td.grand-label,
 .grand-total-row td#footer-expenseAmount {
-  background: none !important;
-  color: #222 !important;
+  background: linear-gradient(90deg, #e0e7ef 0%, #60a5fa 100%) !important;
+  color: #1e293b !important;
 }
+*/
