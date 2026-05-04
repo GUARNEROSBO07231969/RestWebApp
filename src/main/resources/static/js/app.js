@@ -1,11 +1,9 @@
-let chart, editId=null;
+let chart, editId = null;
 const expenseAmount = document.getElementById('expenseAmount');
 function fmt(v){return '$'+Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function recalcTotal(){
   const c=+cashAmount.value||0, v=+visaAmount.value||0, d=+doordashAmount.value||0, g=+grubhubAmount.value||0, u=+ubereatsAmount.value||0, o=+onlineAmount.value||0, s=+expenseAmount.value||0;
   calcTotal.value=fmt(c+v+d+g+u+o+s);
-  const net = c + v + d + g + u + o - s;
-  netSaleAmount.value = fmt(net);
 }
  
 // Center color plugin: fill center of pie with Total KPI color
@@ -63,6 +61,8 @@ async function loadData(){
   allData = await fetch('/api/sales?restaurantId='+id).then(r=>r.json());
   filteredData = allData.slice();
   currentPage = 1;
+  sortColumn = 'date';
+  sortAsc = false;
   renderTable();
 }
 
@@ -161,7 +161,15 @@ function renderTable() {
   const pagination = document.getElementById('pagination');
   // Totals for footer
   let totalCash=0, totalVisa=0, totalDoordash=0, totalGrubhub=0, totalUber=0, totalOnline=0, totalExpense=0, totalSale=0, totalNet=0;
-  const filteredData = getFilteredData();
+  let filteredData = getFilteredData();
+  // Always sort by date descending by default
+  if (!sortColumn || sortColumn === 'date') {
+    filteredData.sort((a, b) => {
+      const ad = a.date ? new Date(a.date) : new Date(0);
+      const bd = b.date ? new Date(b.date) : new Date(0);
+      return bd - ad;
+    });
+  }
   filteredData.forEach(x=>{
     totalCash += x.cashAmount||0;
     totalVisa += x.visaAmount||0;
@@ -179,7 +187,8 @@ function renderTable() {
   pageData.forEach(x=>{
     const saleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
     const netSaleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
-    rows.innerHTML+=`<tr>
+    const highlight = (editId === x.id) ? ' style="background:#2563eb !important;color:#fff !important;border:2.5px solid #facc15 !important;box-shadow:0 0 8px #facc15;"' : '';
+    rows.innerHTML+=`<tr${highlight}>
       <td>${x.date ? x.date.substring(0,10) : ''}</td>
       <td>${fmt(x.cashAmount)}</td>
       <td>${fmt(x.visaAmount)}</td>
@@ -233,10 +242,29 @@ function gotoPage(page) {
   renderTable();
 }
 
-function editTx(id,net,c,v,doordash,grubhub,ubereats,online,store,s){editId=id;netSaleAmount.value=fmt(net);cashAmount.value=c;visaAmount.value=v;doordashAmount.value=doordash;grubhubAmount.value=grubhub;ubereatsAmount.value=ubereats;onlineAmount.value=online;storeName.value=store||'';expenseAmount.value=s;recalcTotal()}
-function cancelEdit(){editId=null;netSaleAmount.value='';cashAmount.value='';visaAmount.value='';doordashAmount.value='';grubhubAmount.value='';ubereatsAmount.value='';onlineAmount.value='';storeName.value='';expenseAmount.value='';calcTotal.value=''}
+function editTx(id, net, c, v, doordash, grubhub, ubereats, online, store, s) {
+  editId = id;
+  sortColumn = null; // Disable sorting when editing
+  renderTable();
+  document.getElementById('cashAmount').value = c != null ? String(c) : '';
+  document.getElementById('visaAmount').value = v != null ? String(v) : '';
+  document.getElementById('doordashAmount').value = doordash != null ? String(doordash) : '';
+  document.getElementById('grubhubAmount').value = grubhub != null ? String(grubhub) : '';
+  document.getElementById('ubereatsAmount').value = ubereats != null ? String(ubereats) : '';
+  document.getElementById('onlineAmount').value = online != null ? String(online) : '';
+  document.getElementById('storeName').value = store != null ? store : '';
+  document.getElementById('expenseAmount').value = s != null ? String(s) : '';
+  recalcTotal();
+}
+function cancelEdit(){
+  editId=null;
+  renderTable(); // remove highlight
+  netSaleAmount.value='';cashAmount.value='';visaAmount.value='';doordashAmount.value='';grubhubAmount.value='';ubereatsAmount.value='';onlineAmount.value='';storeName.value='';expenseAmount.value='';calcTotal.value=''
+}
 
-async function saveTx(){
+async function saveTx() {
+  sortColumn = 'date';
+  sortAsc = false; // descending: most recent first
   const expenseAmountInput = document.getElementById('expenseAmount');
   const doordashAmount = document.getElementById('doordashAmount');
   const grubhubAmount = document.getElementById('grubhubAmount');
@@ -278,7 +306,7 @@ async function delTx(id){await fetch('/api/sales/'+id,{method:'DELETE'});await l
 
 document.addEventListener('DOMContentLoaded',loadRestaurants);
 
-let sortColumn = null, sortAsc = true;
+let sortColumn = 'date', sortAsc = false; // Default: sort by date descending
 
 function updateSortIndicators() {
   const columns = ['date','cashAmount','visaAmount','netsaleAmount','doordashAmount','grubhubAmount','ubereatsAmount','onlineAmount','storeName','expenseAmount','totalAmount'];
@@ -545,14 +573,23 @@ function renderSupplierTable() {
       (row.notes && row.notes.toLowerCase().includes(supplierSearchTerm))
     );
   }
+  // Always sort by transactionDate descending by default, then by id descending for stability
+  filtered.sort((a, b) => {
+    const ad = a.transactionDate ? new Date(a.transactionDate) : new Date(0);
+    const bd = b.transactionDate ? new Date(b.transactionDate) : new Date(0);
+    if (bd - ad !== 0) return bd - ad;
+    // If dates are equal, sort by id descending (newer first)
+    return (b.id || 0) - (a.id || 0);
+  });
   // Pagination logic
   const pageCount = Math.ceil(filtered.length / supplierPageSize);
   if (supplierPage > pageCount) supplierPage = pageCount || 1;
   const start = (supplierPage - 1) * supplierPageSize;
   const pageData = filtered.slice(start, start + supplierPageSize);
-  pageData.forEach((row, idx) => {
+  pageData.forEach((row) => {
     totalAmount += Number(row.invoiceAmount) || 0;
-    tbody.innerHTML += `<tr>
+    const highlight = (supplierEditId === row.id) ? ' style="background:#2563eb !important;color:#fff !important;border:2.5px solid #facc15 !important;box-shadow:0 0 8px #facc15;"' : '';
+    tbody.innerHTML += `<tr${highlight}>
       <td>${row.supplierName}</td>
       <td>${row.transactionDate}</td>
       <td>${row.invoiceNumber}</td>
@@ -560,8 +597,8 @@ function renderSupplierTable() {
       <td>$${Number(row.invoiceAmount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
       <td>${row.notes||''}</td>
       <td>
-        <button class='action-btn edit-btn' onclick='editSupplierRow(${start+idx})'>Edit</button>
-        <button class='action-btn delete-btn' onclick='deleteSupplierRow(${start+idx})'>Delete</button>
+        <button class='action-btn edit-btn' onclick='editSupplierRow("${row.id}")'>Edit</button>
+        <button class='action-btn delete-btn' onclick='deleteSupplierRow("${row.id}")'>Delete</button>
       </td>
     </tr>`;
   });
@@ -593,14 +630,18 @@ document.getElementById('supplierForm').onsubmit = async function(e) {
     notes: document.getElementById('notes').value
   };
   try {
-    let resp;
-    if (supplierEditId !== null && supplierData[supplierEditId] && supplierData[supplierEditId].id) {
+    let resp, savedId = null;
+    if (supplierEditId) {
       // Update existing
-      resp = await fetch(`/api/suppliers/${supplierData[supplierEditId].id}`, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(row)
-      });
+      const editingRow = supplierData.find(r => r.id == supplierEditId);
+      if (editingRow && editingRow.id) {
+        resp = await fetch(`/api/suppliers/${editingRow.id}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(row)
+        });
+        savedId = editingRow.id;
+      }
     } else {
       // Create new
       resp = await fetch('/api/suppliers', {
@@ -608,38 +649,46 @@ document.getElementById('supplierForm').onsubmit = async function(e) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(row)
       });
+      if (resp.ok) {
+        const data = await resp.json();
+        savedId = data.id;
+      }
     }
-    if (!resp.ok) {
-      const text = await resp.text();
+    if (!resp || !resp.ok) {
+      const text = resp ? await resp.text() : 'No response';
       alert('Error saving supplier transaction: ' + text);
       console.error('Supplier save error:', text);
       return;
     }
+    supplierEditId = savedId;
   } catch (e) {
     alert('Error saving supplier transaction: ' + e);
     console.error('Supplier save error:', e);
     return;
   }
-  supplierEditId = null;
   supplierForm.reset();
   await loadSupplierData();
+  renderSupplierTable(); // Re-highlight after reload
 };
 
-window.editSupplierRow = function(idx) {
-  const row = supplierData[idx];
+window.editSupplierRow = function(id) {
+  const row = supplierData.find(r => r.id == id);
+  if (!row) return;
   document.getElementById('supplierName').value = row.supplierName;
   document.getElementById('transactionDate').value = row.transactionDate;
   document.getElementById('invoiceNumber').value = row.invoiceNumber;
   document.getElementById('checkNumber').value = row.checkNumber;
   document.getElementById('invoiceAmount').value = row.invoiceAmount;
   document.getElementById('notes').value = row.notes;
-  supplierEditId = idx;
+  supplierEditId = row.id;
+  renderSupplierTable(); // Refresh to show highlight
 };
 
-window.deleteSupplierRow = async function(idx) {
-  if (supplierData[idx] && supplierData[idx].id) {
+window.deleteSupplierRow = async function(id) {
+  const row = supplierData.find(r => r.id == id);
+  if (row && row.id) {
     try {
-      await fetch(`/api/suppliers/${supplierData[idx].id}`, { method: 'DELETE' });
+      await fetch(`/api/suppliers/${row.id}`, { method: 'DELETE' });
     } catch (e) {}
   }
   supplierEditId = null;
