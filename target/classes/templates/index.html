@@ -41,7 +41,7 @@
       </div>
     </div>
 
-    <h3>Add / Edit Transaction</h3>
+    <h3 style="font-size:1.26em;">Add / Edit Transaction</h3>
     <div class="form-grid modern-inputs single-row-form">
       <div class="input-group"><span class="input-icon">💵</span><input id="cashAmount" placeholder=" " oninput="recalcTotal()"><label>Cash Amount</label></div>
       <div class="input-group"><span class="input-icon">💳</span><input id="visaAmount" placeholder=" " oninput="recalcTotal()"><label>Visa Amount</label></div>
@@ -91,11 +91,12 @@
           <th onclick="sortTable('storeName')" style="cursor:pointer;background:var(--table-head);" title="Sort by Store Name">Store Name <span class="sort-indicator" id="sort-storeName"></span></th>
           <th onclick="sortTable('expenseAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Expense Amount">Expense Amount <span class="sort-indicator" id="sort-expenseAmount"></span></th>
           <th onclick="sortTable('totalAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Sale Amount">Sale Amount <span class="sort-indicator" id="sort-totalAmount"></span></th>
+          <th style="background:var(--table-head);font-weight:bold;color:#374151;">Actions</th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
       <tfoot>
-        <tr class="footer-total-row">
+        <tr class="footer-total-row" style="background:var(--table-head);font-weight:600;">
           <td>Totals</td>
           <td id="footer-cashAmount"></td>
           <td id="footer-visaAmount"></td>
@@ -106,6 +107,7 @@
           <td></td>
           <td id="footer-expenseAmount"></td>
           <td id="footer-saleAmount"></td>
+          <td></td>
         </tr>
       </tfoot>
     </table>
@@ -172,5 +174,31 @@
   <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/js/app.js"></script>
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Set default date for supplier transaction date input
+  const dateInput = document.getElementById('transactionDate');
+  if (dateInput) {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
+  }
+});
+// Also set default date when clearing the supplier form
+function clearSupplierForm() {
+  supplierEditId = null;
+  supplierForm.reset();
+  const dateInput = document.getElementById('transactionDate');
+  if (dateInput) {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
+  }
+}
+</script>
 </body>
 </html>

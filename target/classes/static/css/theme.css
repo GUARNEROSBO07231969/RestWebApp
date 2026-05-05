@@ -748,3 +748,22 @@ th[onclick]:hover {
   color: #1e293b !important;
 }
 */
+/* Highlight for editing row in sales transaction table - modern light yellow with visualization effects */
+.modern tr[style*="#2563eb"] {
+  background: linear-gradient(90deg, #fef9c3 80%, #fde047 100%) !important;
+  color: #92400e !important;
+  border: 2.5px solid #fde047 !important;
+  box-shadow: 0 4px 18px 0 #fde04755, 0 1.5px 6px 0 #fde04733;
+  outline: 2px solid #fde047;
+  outline-offset: -2px;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s, color 0.2s, box-shadow 0.3s;
+  animation: rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;
+}
+@keyframes rowHighlightPulse {
+  0% { box-shadow: 0 0 0 0 #fde04777; }
+  60% { box-shadow: 0 0 16px 8px #fde04777; }
+  100% { box-shadow: 0 4px 18px 0 #fde04755, 0 1.5px 6px 0 #fde04733; }
+}

@@ -59,10 +59,15 @@ let currentPage = 1, pageSize = 15, allData = [], filteredData = [];
 async function loadData(){
   const id=document.getElementById('restaurantSelect').value;
   allData = await fetch('/api/sales?restaurantId='+id).then(r=>r.json());
+  // Sort by date/time descending on initial load only
+  allData.sort((a, b) => {
+    const ad = a.date ? new Date(a.date) : new Date(0);
+    const bd = b.date ? new Date(b.date) : new Date(0);
+    if (bd - ad !== 0) return bd - ad;
+    return (b.id || 0) - (a.id || 0);
+  });
   filteredData = allData.slice();
   currentPage = 1;
-  sortColumn = 'date';
-  sortAsc = false;
   renderTable();
 }
 
@@ -162,16 +167,8 @@ function renderTable() {
   // Totals for footer
   let totalCash=0, totalVisa=0, totalDoordash=0, totalGrubhub=0, totalUber=0, totalOnline=0, totalExpense=0, totalSale=0, totalNet=0;
   let filteredData = getFilteredData();
-  // Always sort by date descending by default
-  if (!sortColumn || sortColumn === 'date') {
-    filteredData.sort((a, b) => {
-      const ad = a.date ? new Date(a.date) : new Date(0);
-      const bd = b.date ? new Date(b.date) : new Date(0);
-      if (bd - ad !== 0) return bd - ad;
-      // If dates are equal, sort by id descending (newest first)
-      return (b.id || 0) - (a.id || 0);
-    });
-  }
+  // DO NOT sort filteredData here; keep backend order
+  // filteredData.sort(...); // <-- Make sure this is removed/commented
   filteredData.forEach(x=>{
     totalCash += x.cashAmount||0;
     totalVisa += x.visaAmount||0;
@@ -189,7 +186,10 @@ function renderTable() {
   pageData.forEach(x=>{
     const saleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
     const netSaleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
-    const highlight = (editId === x.id) ? ' style="background:#38bdf8 !important;color:#fff !important;border:2.5px solid #2563eb !important;box-shadow:0 0 8px #2563eb;"' : '';
+    // Use a modern light yellow gradient highlight for editing row
+    const highlight = (editId === x.id)
+      ? ' style="background:linear-gradient(90deg,#fef9c3 80%,#fde047 100%)!important;color:#92400e!important;border:2.5px solid #fde047!important;box-shadow:0 4px 18px 0 #fde04755,0 1.5px 6px 0 #fde04733;outline:2px solid #fde047;outline-offset:-2px;font-weight:600;position:relative;overflow:hidden;transition:background 0.3s,color 0.2s,box-shadow 0.3s;animation:rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;"'
+      : '';
     rows.innerHTML+=`<tr${highlight}>
       <td>${x.date ? x.date.substring(0,10) : ''}</td>
       <td>${fmt(x.cashAmount)}</td>
@@ -259,15 +259,20 @@ function editTx(id, net, c, v, doordash, grubhub, ubereats, online, store, s) {
   recalcTotal();
 }
 function cancelEdit(){
-  editId=null;
+  editId = null;
   renderTable(); // remove highlight
-  netSaleAmount.value='';cashAmount.value='';visaAmount.value='';doordashAmount.value='';grubhubAmount.value='';ubereatsAmount.value='';onlineAmount.value='';storeName.value='';expenseAmount.value='';calcTotal.value=''
+  // Always get the latest input elements by ID and clear them
+  const ids = [
+    'cashAmount', 'visaAmount', 'doordashAmount', 'grubhubAmount', 'ubereatsAmount', 'onlineAmount',
+    'storeName', 'expenseAmount', 'calcTotal'
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
 }
 
 async function saveTx() {
-  sortColumn = 'date';
-  sortAsc = false; // descending: most recent first
-  editId = null; // Clear edit state before saving
   const expenseAmountInput = document.getElementById('expenseAmount');
   const doordashAmount = document.getElementById('doordashAmount');
   const grubhubAmount = document.getElementById('grubhubAmount');
@@ -294,18 +299,17 @@ async function saveTx() {
   }else{
     await fetch('/api/sales',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   }
+  editId = null; // Clear edit state after saving
   await loadData();
   // Clear all input values after saving
-  cashAmount.value='';
-  visaAmount.value='';
-  doordashAmount.value='';
-  grubhubAmount.value='';
-  ubereatsAmount.value='';
-  onlineAmount.value='';
-  storeName.value='';
-  expenseAmount.value='';
-  calcTotal.value='';
-  editId=null;
+  const ids = [
+    'cashAmount', 'visaAmount', 'doordashAmount', 'grubhubAmount', 'ubereatsAmount', 'onlineAmount',
+    'storeName', 'expenseAmount', 'calcTotal'
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
 }
 async function delTx(id){await fetch('/api/sales/'+id,{method:'DELETE'});await loadData();}
 
@@ -447,6 +451,13 @@ async function loadSupplierData() {
   try {
     const res = await fetch(`/api/suppliers?restaurantId=${restaurantId}`);
     supplierData = await res.json();
+    // Sort by date/time descending on initial load only
+    supplierData.sort((a, b) => {
+      const ad = a.transactionDate ? new Date(a.transactionDate) : new Date(0);
+      const bd = b.transactionDate ? new Date(b.transactionDate) : new Date(0);
+      if (bd - ad !== 0) return bd - ad;
+      return (b.id || 0) - (a.id || 0);
+    });
   } catch (e) {
     supplierData = [];
   }
@@ -578,14 +589,6 @@ function renderSupplierTable() {
       (row.notes && row.notes.toLowerCase().includes(supplierSearchTerm))
     );
   }
-  // Always sort by transactionDate descending by default, then by id descending for stability
-  filtered.sort((a, b) => {
-    const ad = a.transactionDate ? new Date(a.transactionDate) : new Date(0);
-    const bd = b.transactionDate ? new Date(b.transactionDate) : new Date(0);
-    if (bd - ad !== 0) return bd - ad;
-    // If dates are equal, sort by id descending (newer first)
-    return (b.id || 0) - (a.id || 0);
-  });
   // Pagination logic
   const pageCount = Math.ceil(filtered.length / supplierPageSize);
   if (supplierPage > pageCount) supplierPage = pageCount || 1;
@@ -593,7 +596,17 @@ function renderSupplierTable() {
   const pageData = filtered.slice(start, start + supplierPageSize);
   pageData.forEach((row) => {
     totalAmount += Number(row.invoiceAmount) || 0;
-    const highlight = (supplierEditId === row.id) ? ' style="background:#38bdf8 !important;color:#fff !important;border:2.5px solid #2563eb !important;box-shadow:0 0 8px 0 rgba(37,99,235,0.2);"' : '';
+    const highlight = (supplierEditId === row.id)
+      ? ' style="background:#38bdf8 !important;color:#fff !important;border:2.5px solid #2563eb !important;box-shadow:0 0 8px 0 rgba(37,99,235,0.2);"'
+      : (supplierDeleteId === row.id)
+        ? ' style="background:#dc2626 !important;color:#fff !important;border:2.5px solid #dc2626 !important;box-shadow:0 0 8px #dc2626;"'
+        : '';
+    let deleteBtnHtml;
+    if (supplierDeleteId === row.id) {
+      deleteBtnHtml = `<button class='action-btn delete-btn' style='background:#dc2626;color:#fff;' onclick='confirmDeleteSupplierRow("${row.id}")'>Confirm Delete</button>`;
+    } else {
+      deleteBtnHtml = `<button class='action-btn delete-btn' onclick='deleteSupplierRow("${row.id}")'>Delete</button>`;
+    }
     tbody.innerHTML += `<tr${highlight}>
       <td>${row.supplierName}</td>
       <td>${row.transactionDate}</td>
@@ -603,7 +616,7 @@ function renderSupplierTable() {
       <td>${row.notes||''}</td>
       <td>
         <button class='action-btn edit-btn' onclick='editSupplierRow("${row.id}")'>Edit</button>
-        <button class='action-btn delete-btn' onclick='deleteSupplierRow("${row.id}")'>Delete</button>
+        ${deleteBtnHtml}
       </td>
     </tr>`;
   });
@@ -626,10 +639,12 @@ document.getElementById('restaurantSelect').addEventListener('change', loadSuppl
 document.getElementById('supplierForm').onsubmit = async function(e) {
   e.preventDefault();
   const selectedRestaurantId = getSelectedRestaurantId();
+  const transactionDateInput = document.getElementById('transactionDate');
+  const prevDateValue = transactionDateInput ? transactionDateInput.value : '';
   const row = {
     restaurantId: selectedRestaurantId,
     supplierName: document.getElementById('supplierName').value,
-    transactionDate: document.getElementById('transactionDate').value,
+    transactionDate: prevDateValue,
     invoiceNumber: document.getElementById('invoiceNumber').value,
     checkNumber: document.getElementById('checkNumber').value,
     invoiceAmount: document.getElementById('invoiceAmount').value,
@@ -648,7 +663,6 @@ document.getElementById('supplierForm').onsubmit = async function(e) {
         });
         savedId = editingRow.id;
       }
-      // After editing, clear edit state
       supplierEditId = null;
     } else {
       // Create new
@@ -675,6 +689,8 @@ document.getElementById('supplierForm').onsubmit = async function(e) {
     return;
   }
   supplierForm.reset();
+  // Restore the transaction date input value after reset
+  if (transactionDateInput) transactionDateInput.value = prevDateValue;
   await loadSupplierData();
   renderSupplierTable(); // Re-highlight after reload
 };
@@ -692,18 +708,65 @@ window.editSupplierRow = function(id) {
   renderSupplierTable(); // Refresh to show highlight
 };
 
-window.deleteSupplierRow = async function(id) {
-  const row = supplierData.find(r => r.id == id);
-  if (row && row.id) {
-    try {
-      await fetch(`/api/suppliers/${row.id}`, { method: 'DELETE' });
-    } catch (e) {}
-  }
-  supplierEditId = null;
-  await loadSupplierData();
-};
+let supplierDeleteId = null;
 
-document.addEventListener('DOMContentLoaded', loadSupplierData);
+function ensureDeleteModalStyles() {
+  if (document.getElementById('delete-modal-style')) return;
+  const style = document.createElement('style');
+  style.id = 'delete-modal-style';
+  style.textContent = `
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(30,41,59,0.35); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .modal-box { background: #fff; color: #0f172a; border-radius: 18px; box-shadow: 0 8px 32px rgba(37,99,235,0.18); padding: 32px 32px 24px 32px; min-width: 340px; max-width: 90vw; text-align: center; position: relative; }
+    .modal-box h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 10px; color: #dc2626; }
+    .modal-box p { font-size: 1.05rem; margin-bottom: 22px; color: #334155; }
+    .modal-btn-row { display: flex; gap: 16px; justify-content: center; }
+    .modal-btn { padding: 10px 28px; border-radius: 10px; font-size: 1rem; border: none; cursor: pointer; font-weight: 600; transition: background .15s; }
+    .modal-btn-cancel { background: #e5e7eb; color: #374151; }
+    .modal-btn-cancel:hover { background: #cbd5e1; }
+    .modal-btn-delete { background: #dc2626; color: #fff; }
+    .modal-btn-delete:hover { background: #b91c1c; }
+  `;
+  document.head.appendChild(style);
+}
+
+function showDeleteModal(id) {
+  ensureDeleteModalStyles();
+  // Remove any existing modal
+  const old = document.getElementById('delete-modal-overlay');
+  if (old) old.remove();
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'delete-modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h2>Confirm Deletion</h2>
+      <p>Are you sure you want to <b>permanently delete</b> this sales transaction record? This action cannot be undone.</p>
+      <div class="modal-btn-row">
+        <button class="modal-btn modal-btn-cancel" id="modal-cancel-btn">Cancel</button>
+        <button class="modal-btn modal-btn-delete" id="modal-delete-btn">Delete</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('modal-cancel-btn').onclick = () => overlay.remove();
+  document.getElementById('modal-delete-btn').onclick = async () => {
+    overlay.remove();
+    await confirmDelTx(id);
+  };
+}
+
+function delTx(id) {
+  deleteId = id;
+  renderTable();
+  showDeleteModal(id);
+}
+
+async function confirmDelTx(id) {
+  await fetch('/api/sales/' + id, { method: 'DELETE' });
+  deleteId = null;
+  await loadData();
+}
 
 // --- Supplier KPI, Word Cloud, and Heat Map logic ---
 function renderSupplierKpiAndGraphs(filteredData) {
@@ -866,3 +929,70 @@ function getEasternIsoString() {
     pad(eastern.getMinutes()) + ':' +
     pad(eastern.getSeconds());
 }
+
+// Add CSS for the custom modal if not present
+function ensureDeleteModalStyles() {
+  if (document.getElementById('delete-modal-style')) return;
+  const style = document.createElement('style');
+  style.id = 'delete-modal-style';
+  style.textContent = `
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(30,41,59,0.35); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .modal-box { background: #fff; color: #0f172a; border-radius: 18px; box-shadow: 0 8px 32px rgba(37,99,235,0.18); padding: 32px 32px 24px 32px; min-width: 340px; max-width: 90vw; text-align: center; position: relative; }
+    .modal-box h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 10px; color: #dc2626; }
+    .modal-box p { font-size: 1.05rem; margin-bottom: 22px; color: #334155; }
+    .modal-btn-row { display: flex; gap: 16px; justify-content: center; }
+    .modal-btn { padding: 10px 28px; border-radius: 10px; font-size: 1rem; border: none; cursor: pointer; font-weight: 600; transition: background .15s; }
+    .modal-btn-cancel { background: #e5e7eb; color: #374151; }
+    .modal-btn-cancel:hover { background: #cbd5e1; }
+    .modal-btn-delete { background: #dc2626; color: #fff; }
+    .modal-btn-delete:hover { background: #b91c1c; }
+  `;
+  document.head.appendChild(style);
+}
+
+function showSupplierDeleteModal(id) {
+  ensureDeleteModalStyles();
+  const old = document.getElementById('delete-modal-overlay');
+  if (old) old.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'delete-modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h2>Confirm Deletion</h2>
+      <p>Are you sure you want to <b>permanently delete</b> this supplier expense transaction record? This action cannot be undone.</p>
+      <div class="modal-btn-row">
+        <button class="modal-btn modal-btn-cancel" id="modal-cancel-btn">Cancel</button>
+        <button class="modal-btn modal-btn-delete" id="modal-delete-btn">Delete</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('modal-cancel-btn').onclick = () => {
+    overlay.remove();
+    supplierDeleteId = null;
+    renderSupplierTable();
+  };
+  document.getElementById('modal-delete-btn').onclick = async () => {
+    overlay.remove();
+    await confirmDeleteSupplierRow(id);
+  };
+}
+
+window.deleteSupplierRow = function(id) {
+  supplierDeleteId = id;
+  renderSupplierTable();
+  showSupplierDeleteModal(id);
+};
+
+async function confirmDeleteSupplierRow(id) {
+  const row = supplierData.find(r => r.id == id);
+  if (row && row.id) {
+    try {
+      await fetch(`/api/suppliers/${row.id}`, { method: 'DELETE' });
+    } catch (e) {}
+  }
+  supplierDeleteId = null;
+  await loadSupplierData();
+  renderSupplierTable();
+};

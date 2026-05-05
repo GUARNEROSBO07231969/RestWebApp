@@ -23,11 +23,11 @@ public class SaleController {
     @GetMapping
     public List<Sale> all(@RequestParam Long restaurantId) {
         if (securityService.isSuperAdmin()) {
-            return s.findByRestaurant(r.findById(restaurantId).orElseThrow());
+            return s.findByRestaurantOrderByIdAsc(r.findById(restaurantId).orElseThrow());
         } else {
             Restaurant current = securityService.getCurrentUserRestaurant();
             if (current == null || !current.getId().equals(restaurantId)) return List.of();
-            return s.findByRestaurant(current);
+            return s.findByRestaurantOrderByIdAsc(current);
         }
     }
 
