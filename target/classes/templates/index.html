@@ -8,7 +8,20 @@
 </head>
 <body>
   <div class="top-bar">
-    <h2>Restaurant Sales and Expenses</h2>
+    <h2 style="
+      background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px 0 #2563eb22, 0 1.5px 6px 0 #38bdf822;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      text-shadow: 0 2px 8px #2563eb44, 0 1px 1px #2222;
+      margin-bottom: 10px;
+      font-size: 1.26rem;
+      display: inline-block;
+      transition: box-shadow 0.3s, background 0.3s;
+    ">Restaurant Sales and Expenses</h2>
     <div class="theme-toggle">
       <label class="switch">
         <input type="checkbox" id="themeToggle" onchange="toggleTheme(this)">
@@ -41,7 +54,7 @@
       </div>
     </div>
 
-    <h3 style="font-size:1.26em;">Add / Edit Transaction</h3>
+    <h3 style="font-size:1em;">Add / Edit Transaction</h3>
     <div class="form-grid modern-inputs single-row-form">
       <div class="input-group"><span class="input-icon">💵</span><input id="cashAmount" placeholder=" " oninput="recalcTotal()"><label>Cash Amount</label></div>
       <div class="input-group"><span class="input-icon">💳</span><input id="visaAmount" placeholder=" " oninput="recalcTotal()"><label>Visa Amount</label></div>
@@ -121,9 +134,8 @@
         <strong id="supplierKpiVal" style="font-size:1.45rem !important;color:#fff;text-shadow:0 1px 8px #f97316,0 1px 1px #222;">$0</strong>
         <span class="kpi-pct" id="supplierKpiPct" style="font-size:0.78em !important;"></span>
       </div>
-      <canvas id="supplierHeatMap" width="429" height="166" style="background:#f3f4f6;border-radius:14px;box-sizing:border-box;position:relative;display:inline-block;"></canvas>
     </div>
-    <h3>Supplier Invoice Transactions</h3>
+    <h3 style="font-size:1em;">Supplier Invoice Transactions</h3>
     <form id="supplierForm" class="form-grid modern-inputs single-row-form" style="margin-bottom:10px;">
       <div class="input-group"><span class="input-icon">🏢</span><input id="supplierName" required placeholder=" "><label>Supplier Name</label></div>
       <div class="input-group"><span class="input-icon">📅</span><input id="transactionDate" type="date" required placeholder=" "><label>Transaction Date</label></div>
@@ -146,13 +158,13 @@
     <table class="modern" id="supplierTable">
       <thead>
         <tr>
-          <th>Supplier Name</th>
-          <th>Transaction Date</th>
-          <th>Invoice Number</th>
-          <th>Check Number</th>
-          <th>Invoice Amount</th>
-          <th>Notes</th>
-          <th>Actions</th>
+          <th onclick="sortSupplierTable('supplierName')" style="cursor:pointer;background:var(--table-head);" title="Sort by Supplier Name">Supplier Name <span class="sort-indicator" id="sort-supplier-supplierName"></span></th>
+          <th onclick="sortSupplierTable('transactionDate')" style="cursor:pointer;background:var(--table-head);" title="Sort by Transaction Date">Transaction Date <span class="sort-indicator" id="sort-supplier-transactionDate"></span></th>
+          <th onclick="sortSupplierTable('invoiceNumber')" style="cursor:pointer;background:var(--table-head);" title="Sort by Invoice Number">Invoice Number <span class="sort-indicator" id="sort-supplier-invoiceNumber"></span></th>
+          <th onclick="sortSupplierTable('checkNumber')" style="cursor:pointer;background:var(--table-head);" title="Sort by Check Number">Check Number <span class="sort-indicator" id="sort-supplier-checkNumber"></span></th>
+          <th onclick="sortSupplierTable('invoiceAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Invoice Amount">Invoice Amount <span class="sort-indicator" id="sort-supplier-invoiceAmount"></span></th>
+          <th onclick="sortSupplierTable('notes')" style="cursor:pointer;background:var(--table-head);" title="Sort by Notes">Notes <span class="sort-indicator" id="sort-supplier-notes"></span></th>
+          <th style="background:var(--table-head);font-weight:bold;color:#374151;">Actions</th>
         </tr>
       </thead>
       <tbody id="supplierRows"></tbody>

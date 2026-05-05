@@ -119,8 +119,48 @@ document.addEventListener('DOMContentLoaded', () => {
       tooltip.style.display = 'none';
     });
   }
+
+  // --- Supplier KPI tooltip logic ---
+  const supplierKpiVal = document.getElementById('supplierKpiVal');
+  const supplierKpiTooltip = document.getElementById('supplierKpiTooltip');
+  let supplierTooltipTimer = null;
+  if (supplierKpiVal && supplierKpiTooltip) {
+    supplierKpiVal.addEventListener('mouseenter', () => {
+      clearTimeout(supplierTooltipTimer);
+      supplierKpiTooltip.style.display = 'block';
+      // Render the graph only when shown
+      if (typeof renderSupplierKpiAndGraphs === 'function') {
+        // Use the latest supplier data (assume global supplierData or filteredSupplierData)
+        let data = window.filteredSupplierData || window.supplierData || [];
+        renderSupplierKpiAndGraphs(data);
+      }
+    });
+    supplierKpiVal.addEventListener('mouseleave', () => {
+      supplierTooltipTimer = setTimeout(() => {
+        supplierKpiTooltip.style.display = 'none';
+        if (window.supplierHeatMapChart) {
+          window.supplierHeatMapChart.destroy();
+          window.supplierHeatMapChart = null;
+        }
+      }, 200);
+    });
+    supplierKpiTooltip.addEventListener('mouseenter', () => {
+      clearTimeout(supplierTooltipTimer);
+      supplierKpiTooltip.style.display = 'block';
+    });
+    supplierKpiTooltip.addEventListener('mouseleave', () => {
+      supplierTooltipTimer = setTimeout(() => {
+        supplierKpiTooltip.style.display = 'none';
+        if (window.supplierHeatMapChart) {
+          window.supplierHeatMapChart.destroy();
+          window.supplierHeatMapChart = null;
+        }
+      }, 200);
+    });
+  }
 });
 
+// Filter and search logic
 function getFilteredData() {
   let data = allData;
   if (dateFrom || dateTo) {
@@ -359,81 +399,48 @@ function sortTable(column) {
   updateSortIndicators();
 }
 
-function printPDF() {
-  window.print();
-}
-function printExcel() {
-  // Export only the table (with grand total), exclude KPIs and pagination
-  const table = document.querySelector('.modern');
-  const grandTotal = document.getElementById('grand-total-row-container');
-  let html = '';
-  if (table) {
-    // Add colgroup for professional column widths
-    const colgroup = `<colgroup>
-      <col style='width: 13%'> <!-- Date -->
-      <col style='width: 15%'> <!-- Gross Net Amount -->
-      <col style='width: 13%'> <!-- Cash -->
-      <col style='width: 13%'> <!-- Visa -->
-      <col style='width: 18%'> <!-- Store Name -->
-      <col style='width: 13%'> <!-- Expense Amount -->
-      <col style='width: 15%'> <!-- Total Amount -->
-      <col style='width: 10%'> <!-- Actions (hidden in print) -->
-    </colgroup>`;
-    // Insert colgroup after <table ...>
-    html += table.outerHTML.replace(/<table([^>]*)>/, `<table$1>${colgroup}`);
+// --- Supplier Table Sorting ---
+let supplierSortColumn = 'transactionDate', supplierSortAsc = false;
+function sortSupplierTable(column) {
+  if (supplierSortColumn === column) {
+    supplierSortAsc = !supplierSortAsc;
+  } else {
+    supplierSortColumn = column;
+    supplierSortAsc = true;
   }
-  if (grandTotal) html += grandTotal.innerHTML;
-  const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'dashboard.xls';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
+  supplierData.sort((a, b) => {
+    let av = a[column], bv = b[column];
+    if (column === 'supplierName' || column === 'transactionDate' || column === 'invoiceNumber' || column === 'checkNumber' || column === 'notes') {
+      av = av ? av.toString().toLowerCase() : '';
+      bv = bv ? bv.toString().toLowerCase() : '';
+      if (av < bv) return supplierSortAsc ? -1 : 1;
+      if (av > bv) return supplierSortAsc ? 1 : -1;
+      return 0;
+    } else {
+      av = Number(av) || 0;
+      bv = Number(bv) || 0;
+      return supplierSortAsc ? av - bv : bv - av;
+    }
+  });
+  supplierPage = 1;
+  renderSupplierTable();
+  updateSupplierSortIndicators();
 }
-
-function switchTab(tab) {
-  const salesTab = document.getElementById('tabSales');
-  const suppliersTab = document.getElementById('tabSuppliers');
-  const salesContent = document.getElementById('tabContentSales');
-  const suppliersContent = document.getElementById('tabContentSuppliers');
-  if (tab === 'sales') {
-    salesTab.classList.add('tab-active');
-    suppliersTab.classList.remove('tab-active');
-    salesContent.style.display = '';
-    suppliersContent.style.display = 'none';
-  } else if (tab === 'suppliers') {
-    salesTab.classList.remove('tab-active');
-    suppliersTab.classList.add('tab-active');
-    salesContent.style.display = 'none';
-    suppliersContent.style.display = '';
-  }
+function updateSupplierSortIndicators() {
+  const columns = ['supplierName','transactionDate','invoiceNumber','checkNumber','invoiceAmount','notes'];
+  columns.forEach(col => {
+    const el = document.getElementById('sort-supplier-' + col);
+    if (!el) return;
+    if (supplierSortColumn === col) {
+      el.textContent = supplierSortAsc ? '▲' : '▼';
+      el.style.color = '#2563eb';
+      el.style.fontWeight = 'bold';
+      el.style.marginLeft = '2px';
+    } else {
+      el.textContent = '';
+    }
+  });
 }
-
-function updateTabSlider() {
-  const tabMenu = document.querySelector('.tab-menu');
-  const slider = tabMenu.querySelector('.tab-slider');
-  const activeTab = tabMenu.querySelector('.tab-active');
-  if (activeTab && slider) {
-    const rect = activeTab.getBoundingClientRect();
-    const parentRect = tabMenu.getBoundingClientRect();
-    slider.style.left = (rect.left - parentRect.left) + 'px';
-    slider.style.width = rect.width + 'px';
-  }
-}
-
-// Patch switchTab to update slider
-const origSwitchTab = window.switchTab;
-window.switchTab = function(tab) {
-  origSwitchTab(tab);
-  setTimeout(updateTabSlider, 10);
-};
-window.addEventListener('DOMContentLoaded', updateTabSlider);
-window.addEventListener('resize', updateTabSlider);
 
 // --- Supplier Invoice Transactions logic ---
 let supplierEditId = null;
@@ -500,11 +507,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const supplierSearchInput = document.getElementById('supplierTableSearch');
-  if (supplierSearchInput) {
-    supplierSearchInput.addEventListener('input', e => {
-      supplierSearchTerm = e.target.value.trim().toLowerCase();
-      renderSupplierTable();
+  // --- Supplier KPI tooltip logic ---
+  const supplierKpiVal = document.getElementById('supplierKpiVal');
+  const supplierKpiTooltip = document.getElementById('supplierKpiTooltip');
+  let supplierTooltipTimer = null;
+  if (supplierKpiVal && supplierKpiTooltip) {
+    supplierKpiVal.addEventListener('mouseenter', () => {
+      clearTimeout(supplierTooltipTimer);
+      supplierKpiTooltip.style.display = 'block';
+      // Render the graph only when shown
+      if (typeof renderSupplierKpiAndGraphs === 'function') {
+        // Use the latest supplier data (assume global supplierData or filteredSupplierData)
+        let data = window.filteredSupplierData || window.supplierData || [];
+        renderSupplierKpiAndGraphs(data);
+      }
+    });
+    supplierKpiVal.addEventListener('mouseleave', () => {
+      supplierTooltipTimer = setTimeout(() => {
+        supplierKpiTooltip.style.display = 'none';
+        if (window.supplierHeatMapChart) {
+          window.supplierHeatMapChart.destroy();
+          window.supplierHeatMapChart = null;
+        }
+      }, 200);
+    });
+    supplierKpiTooltip.addEventListener('mouseenter', () => {
+      clearTimeout(supplierTooltipTimer);
+      supplierKpiTooltip.style.display = 'block';
+    });
+    supplierKpiTooltip.addEventListener('mouseleave', () => {
+      supplierTooltipTimer = setTimeout(() => {
+        supplierKpiTooltip.style.display = 'none';
+        if (window.supplierHeatMapChart) {
+          window.supplierHeatMapChart.destroy();
+          window.supplierHeatMapChart = null;
+        }
+      }, 200);
     });
   }
 });
@@ -589,6 +627,21 @@ function renderSupplierTable() {
       (row.notes && row.notes.toLowerCase().includes(supplierSearchTerm))
     );
   }
+  // Sort filtered data by selected column
+  filtered.sort((a, b) => {
+    let av = a[supplierSortColumn], bv = b[supplierSortColumn];
+    if (supplierSortColumn === 'supplierName' || supplierSortColumn === 'transactionDate' || supplierSortColumn === 'invoiceNumber' || supplierSortColumn === 'checkNumber' || supplierSortColumn === 'notes') {
+      av = av ? av.toString().toLowerCase() : '';
+      bv = bv ? bv.toString().toLowerCase() : '';
+      if (av < bv) return supplierSortAsc ? -1 : 1;
+      if (av > bv) return supplierSortAsc ? 1 : -1;
+      return 0;
+    } else {
+      av = Number(av) || 0;
+      bv = Number(bv) || 0;
+      return supplierSortAsc ? av - bv : bv - av;
+    }
+  });
   // Pagination logic
   const pageCount = Math.ceil(filtered.length / supplierPageSize);
   if (supplierPage > pageCount) supplierPage = pageCount || 1;
@@ -597,7 +650,7 @@ function renderSupplierTable() {
   pageData.forEach((row) => {
     totalAmount += Number(row.invoiceAmount) || 0;
     const highlight = (supplierEditId === row.id)
-      ? ' style="background:#38bdf8 !important;color:#fff !important;border:2.5px solid #2563eb !important;box-shadow:0 0 8px 0 rgba(37,99,235,0.2);"'
+      ? ' style="background:linear-gradient(90deg,#fef9c3 80%,#fde047 100%)!important;color:#92400e!important;border:2.5px solid #fde047!important;box-shadow:0 4px 18px 0 #fde04755,0 1.5px 6px 0 #fde04733;outline:2px solid #fde047;outline-offset:-2px;font-weight:600;position:relative;overflow:hidden;transition:background 0.3s,color 0.2s,box-shadow 0.3s;animation:rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;"'
       : (supplierDeleteId === row.id)
         ? ' style="background:#dc2626 !important;color:#fff !important;border:2.5px solid #dc2626 !important;box-shadow:0 0 8px #dc2626;"'
         : '';
@@ -627,6 +680,7 @@ function renderSupplierTable() {
   }
   renderSupplierPagination(filtered.length);
   renderSupplierKpiAndGraphs(filtered);
+  updateSupplierSortIndicators();
 }
 
 function clearSupplierForm() {
@@ -787,7 +841,7 @@ function renderSupplierKpiAndGraphs(filteredData) {
   // Heat Map
   const sortedSuppliers = Object.entries(supplierTotals)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
+    .slice(0, 5); // Show only top 5 suppliers
   const heatMapLabels = sortedSuppliers.map(([name]) => name);
   const heatMapData = sortedSuppliers.map(([, value]) => value);
   if (window.supplierHeatMapChart) {
@@ -802,31 +856,71 @@ function renderSupplierKpiAndGraphs(filteredData) {
         datasets: [{
           label: 'Total Invoice Amount',
           data: heatMapData,
-          backgroundColor: heatMapData.map(v => `rgba(249,115,22,${0.3 + 0.7 * (v/Math.max(...heatMapData))})`),
-          borderRadius: 8,
+          backgroundColor: [
+            '#2563eb', '#38bdf8', '#22c55e', '#f59e42', '#facc15'
+          ],
+          borderRadius: 12, // more rounded
+          barPercentage: 0.6,
+          categoryPercentage: 0.7,
+          borderSkipped: false,
+          borderWidth: 1,
+          borderColor: '#e0e7ef',
         }]
       },
       options: {
+        responsive: false,
+        maintainAspectRatio: false,
         indexAxis: 'y',
         plugins: {
           legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const val = context.raw;
-                const pct = total > 0 ? (val/total*100).toFixed(1) : 0;
-                return `${context.label}: $${val.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} (${pct}%)`;
-              }
+          tooltip: { enabled: true },
+          datalabels: {
+            anchor: 'end',
+            align: 'right',
+            color: '#334155',
+            font: { size: 17, weight: 'bold', family: 'Inter, system-ui, Arial' },
+            formatter: function(value, context) {
+              return `${heatMapLabels[context.dataIndex]}\n$${value.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
             }
           }
         },
         scales: {
-          x: { beginAtZero: true, grid: { color: '#e5e7eb' } },
-          y: { grid: { color: '#e5e7eb' } }
+          x: {
+            beginAtZero: true,
+            grid: { color: '#e5e7eb' },
+            ticks: { color: '#334155', font: { size: 15, weight: 'bold' } }
+          },
+          y: {
+            grid: { display: false },
+            ticks: {
+              color: '#2563eb',
+              font: { size: 17, weight: 'bold' },
+              callback: function(value, index) {
+                return heatMapLabels[index];
+              }
+            }
+          }
         },
-        responsive: false,
-        maintainAspectRatio: false,
-      }
+        layout: { padding: 8 },
+        animation: { duration: 900, easing: 'easeOutQuart' },
+        plugins: {
+          ...Chart.defaults.plugins,
+          datalabels: Chart.defaults.plugins.datalabels,
+          afterDraw: function(chart) {
+            const ctx = chart.ctx;
+            ctx.save();
+            chart.getDatasetMeta(0).data.forEach(bar => {
+              ctx.shadowColor = 'rgba(37,99,235,0.18)';
+              ctx.shadowBlur = 8;
+              ctx.shadowOffsetX = 2;
+              ctx.shadowOffsetY = 2;
+              ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
+            });
+            ctx.restore();
+          }
+        }
+      },
+      plugins: [window.ChartDataLabels]
     });
   } else if (document.getElementById('supplierHeatMap')) {
     document.getElementById('supplierHeatMap').innerHTML = '<div style="color:#888;text-align:center;padding-top:40px;">No data</div>';
@@ -996,3 +1090,22 @@ async function confirmDeleteSupplierRow(id) {
   await loadSupplierData();
   renderSupplierTable();
 };
+
+function switchTab(tab) {
+  const salesTab = document.getElementById('tabSales');
+  const suppliersTab = document.getElementById('tabSuppliers');
+  const salesContent = document.getElementById('tabContentSales');
+  const suppliersContent = document.getElementById('tabContentSuppliers');
+  if (tab === 'sales') {
+    salesTab.classList.add('tab-active');
+    suppliersTab.classList.remove('tab-active');
+    salesContent.style.display = '';
+    suppliersContent.style.display = 'none';
+  } else if (tab === 'suppliers') {
+    salesTab.classList.remove('tab-active');
+    suppliersTab.classList.add('tab-active');
+    salesContent.style.display = 'none';
+    suppliersContent.style.display = '';
+    setTimeout(() => { loadSupplierData(); }, 0); // Ensure content is visible before loading data
+  }
+}
