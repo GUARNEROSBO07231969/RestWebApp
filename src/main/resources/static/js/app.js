@@ -167,7 +167,9 @@ function renderTable() {
     filteredData.sort((a, b) => {
       const ad = a.date ? new Date(a.date) : new Date(0);
       const bd = b.date ? new Date(b.date) : new Date(0);
-      return bd - ad;
+      if (bd - ad !== 0) return bd - ad;
+      // If dates are equal, sort by id descending (newest first)
+      return (b.id || 0) - (a.id || 0);
     });
   }
   filteredData.forEach(x=>{
@@ -265,6 +267,7 @@ function cancelEdit(){
 async function saveTx() {
   sortColumn = 'date';
   sortAsc = false; // descending: most recent first
+  editId = null; // Clear edit state before saving
   const expenseAmountInput = document.getElementById('expenseAmount');
   const doordashAmount = document.getElementById('doordashAmount');
   const grubhubAmount = document.getElementById('grubhubAmount');
@@ -283,6 +286,8 @@ async function saveTx() {
     grubhubAmount: g,
     ubereatsAmount: u,
     onlineAmount: o,
+    // Use Eastern Time for the date
+    date: getEasternIsoString()
   };
   if(editId){
     await fetch('/api/sales/'+editId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -643,6 +648,8 @@ document.getElementById('supplierForm').onsubmit = async function(e) {
         });
         savedId = editingRow.id;
       }
+      // After editing, clear edit state
+      supplierEditId = null;
     } else {
       // Create new
       resp = await fetch('/api/suppliers', {
@@ -654,6 +661,7 @@ document.getElementById('supplierForm').onsubmit = async function(e) {
         const data = await resp.json();
         savedId = data.id;
       }
+      supplierEditId = null;
     }
     if (!resp || !resp.ok) {
       const text = resp ? await resp.text() : 'No response';
@@ -661,7 +669,6 @@ document.getElementById('supplierForm').onsubmit = async function(e) {
       console.error('Supplier save error:', text);
       return;
     }
-    supplierEditId = savedId;
   } catch (e) {
     alert('Error saving supplier transaction: ' + e);
     console.error('Supplier save error:', e);
@@ -846,3 +853,16 @@ document.addEventListener('DOMContentLoaded', function() {
   if (from) from.addEventListener('change', filterTable);
   if (to) to.addEventListener('change', filterTable);
 });
+
+// Helper to get current date/time in Eastern Time (America/New_York) in ISO format (yyyy-MM-ddTHH:mm:ss)
+function getEasternIsoString() {
+  const now = new Date();
+  const eastern = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const pad = n => n.toString().padStart(2, '0');
+  return eastern.getFullYear() + '-' +
+    pad(eastern.getMonth() + 1) + '-' +
+    pad(eastern.getDate()) + 'T' +
+    pad(eastern.getHours()) + ':' +
+    pad(eastern.getMinutes()) + ':' +
+    pad(eastern.getSeconds());
+}

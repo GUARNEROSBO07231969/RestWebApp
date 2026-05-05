@@ -5,6 +5,7 @@ import com.example.restaurant.model.*;
 import com.example.restaurant.service.RestaurantSecurityService;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/sales")
@@ -44,6 +45,16 @@ public class SaleController {
         o.grubhubAmount = b.get("grubhubAmount") != null ? ((Number) b.get("grubhubAmount")).doubleValue() : 0;
         o.ubereatsAmount = b.get("ubereatsAmount") != null ? ((Number) b.get("ubereatsAmount")).doubleValue() : 0;
         o.onlineAmount = b.get("onlineAmount") != null ? ((Number) b.get("onlineAmount")).doubleValue() : 0;
+        // Set date with full precision if provided, otherwise use now
+        if (b.get("date") != null) {
+            if (b.get("date") instanceof String) {
+                o.date = java.time.LocalDateTime.parse((String) b.get("date").toString().replace("Z", ""));
+            } else {
+                o.date = LocalDateTime.now();
+            }
+        } else {
+            o.date = LocalDateTime.now();
+        }
         return s.save(o);
     }
 
