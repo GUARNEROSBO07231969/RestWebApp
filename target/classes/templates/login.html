@@ -5,6 +5,135 @@
   <title>Login</title>
   <link rel="stylesheet" href="/css/theme.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .login-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .login-logo span {
+      font-size: 3.2rem;
+      color: #2563eb;
+      background: linear-gradient(90deg,#2563eb 60%,#38bdf8 100%);
+      border-radius: 50%;
+      padding: 18px 20px 16px 20px;
+      box-shadow: 0 2px 16px 0 rgba(37,99,235,0.10);
+      display: inline-block;
+    }
+    .login-container {
+      max-width: 390px;
+      margin: 60px auto 0 auto;
+      background: var(--card);
+      border-radius: 26px;
+      box-shadow: 0 6px 36px 0 rgba(30,41,59,0.13), 0 2px 8px 0 rgba(30,41,59,0.07);
+      padding: 44px 36px 36px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .login-title {
+      font-size: 2.3rem;
+      font-weight: 800;
+      margin-bottom: 22px;
+      color: #2563eb;
+      letter-spacing: -1px;
+      text-shadow: 0 2px 8px #e0e7ef;
+    }
+    .login-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .login-form .input-group {
+      font-size: 1rem;
+      padding: 16px 8px 8px 40px;
+      min-height: 38px;
+      width: 70%;
+      margin: 0 auto 18px auto;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .login-form .input-group:focus-within {
+      background: #dbeafe;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px #2563eb33;
+    }
+    .login-form .input-group input {
+      font-size: 1.05rem;
+      min-height: 28px;
+      padding: 0 8px 0 0;
+      width: 100%;
+      margin-left: 8px;
+      background: #fff;
+      border-radius: 5px;
+      border: 2px solid #2563eb;
+      box-shadow: none;
+      z-index: 2;
+    }
+    .login-form .input-group input:focus {
+      background: #e0f2fe;
+      border-color: #1d4ed8;
+      box-shadow: 0 0 0 3px #2563eb33;
+    }
+    .login-form .input-group label {
+      font-size: 0.98rem;
+      left: 40px;
+      top: 10px;
+      transform: none;
+      background: transparent;
+      z-index: 3;
+      pointer-events: none;
+      transition: all .2s;
+    }
+    .login-form .input-group input:not(:placeholder-shown)+label,
+    .login-form .input-group input:focus+label {
+      top: -12px;
+      left: 36px;
+      font-size: 0.85rem;
+      color: #2563eb;
+      background: #e0f2fe;
+      padding: 0 4px;
+    }
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #2563eb;
+      font-size: 1.2em;
+      opacity: 0.92;
+      z-index: 4;
+    }
+    .login-btn {
+      width: 100%;
+      padding: 15px 0;
+      border-radius: 16px;
+      background: linear-gradient(90deg,#2563eb 60%,#38bdf8 100%);
+      color: #fff;
+      font-size: 1.18rem;
+      font-weight: 800;
+      border: none;
+      box-shadow: 0 2px 8px 0 rgba(37,99,235,0.10);
+      cursor: pointer;
+      transition: background 0.18s;
+      margin-top: 6px;
+    }
+    .login-btn:hover, .login-btn:focus {
+      background: #1d4ed8;
+    }
+    .login-form .error-message {
+      color: #ef4444;
+      background: #fee2e2;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 1em;
+      margin-bottom: 0;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
   <div class="login-container">
@@ -14,14 +143,15 @@
     <div class="login-title">Sign In</div>
     <form class="login-form" method="post" action="/login">
       <div class="input-group">
+        <span class="input-icon">👤</span>
         <input id="username" name="username" type="text" required placeholder=" " autocomplete="username" />
         <label for="username">Username</label>
       </div>
       <div class="input-group">
+        <span class="input-icon">🔑</span>
         <input id="password" name="password" type="password" required placeholder=" " autocomplete="current-password" />
         <label for="password">Password</label>
       </div>
-      <!-- Error message placeholder, will be shown if login fails -->
       <div th:if="${param.error}" class="error-message login-form">Invalid username or password</div>
       <button class="login-btn" type="submit">Login</button>
     </form>

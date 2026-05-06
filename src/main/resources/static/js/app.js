@@ -686,6 +686,7 @@ function renderSupplierTable() {
 function clearSupplierForm() {
   supplierEditId = null;
   supplierForm.reset();
+  renderSupplierTable(); // Ensure highlight is removed after cancel
 }
 
 document.getElementById('restaurantSelect').addEventListener('change', loadSupplierData);
@@ -929,7 +930,11 @@ function renderSupplierKpiAndGraphs(filteredData) {
 
 // --- Print functions for Supplier Invoices ---
 function printSupplierPDF() {
-  // Hide form, search, nav, and tabs for print
+  const originalTitle = document.title;
+  const restaurantName = getSelectedRestaurantName();
+  const reportTitle = `Restaurant ${restaurantName} - Supplier Expenses`;
+  document.title = reportTitle;
+  setPrintReportTitle(reportTitle);
   const form = document.getElementById('supplierForm');
   const search = document.getElementById('supplierTableSearch');
   const pag = document.getElementById('supplierPagination');
@@ -938,19 +943,23 @@ function printSupplierPDF() {
   if (search) search.style.display = 'none';
   if (pag) pag.style.display = 'none';
   if (tabs) tabs.style.display = 'none';
-  // Print only KPI, graph, and table
   window.print();
-  // Restore after print
   setTimeout(() => {
     if (form) form.style.display = '';
     if (search) search.style.display = '';
     if (pag) pag.style.display = '';
     if (tabs) tabs.style.display = '';
+    document.title = originalTitle;
+    setPrintReportTitle('');
   }, 500);
 }
 
 function printSupplierExcel() {
-  // Export only the supplier table (with grand total)
+  const originalTitle = document.title;
+  const restaurantName = getSelectedRestaurantName();
+  const reportTitle = `Restaurant ${restaurantName} - Supplier Expenses`;
+  document.title = reportTitle;
+  setPrintReportTitle(reportTitle);
   const table = document.getElementById('supplierTable');
   let html = '';
   if (table) {
@@ -966,6 +975,77 @@ function printSupplierExcel() {
   setTimeout(() => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    document.title = originalTitle;
+    setPrintReportTitle('');
+  }, 100);
+}
+
+function getSelectedRestaurantName() {
+  const sel = document.getElementById('restaurantSelect');
+  if (sel && sel.selectedIndex >= 0) {
+    return sel.options[sel.selectedIndex].text.trim();
+  }
+  return '';
+}
+
+function setPrintReportTitle(title) {
+  const el = document.getElementById('printReportTitle');
+  if (el) el.textContent = title || '';
+}
+
+// --- Print functions for Sales Transactions ---
+function printPDF() {
+  const originalTitle = document.title;
+  const restaurantName = getSelectedRestaurantName();
+  const reportTitle = `Restaurant ${restaurantName} - Sales Transactions`;
+  document.title = reportTitle;
+  setPrintReportTitle(reportTitle);
+  // Hide form, search, nav, and tabs for print
+  const form = document.querySelector('.form-grid');
+  const search = document.getElementById('searchInput')?.parentElement;
+  const pag = document.getElementById('pagination');
+  const tabs = document.querySelector('.tab-menu');
+  const dateRange = document.querySelector('.date-range-filter');
+  if (form) form.style.display = 'none';
+  if (search) search.style.display = 'none';
+  if (pag) pag.style.display = 'none';
+  if (tabs) tabs.style.display = 'none';
+  if (dateRange) dateRange.style.display = 'none';
+  window.print();
+  setTimeout(() => {
+    if (form) form.style.display = '';
+    if (search) search.style.display = '';
+    if (pag) pag.style.display = '';
+    if (tabs) tabs.style.display = '';
+    if (dateRange) dateRange.style.display = '';
+    document.title = originalTitle;
+    setPrintReportTitle('');
+  }, 500);
+}
+
+function printExcel() {
+  const originalTitle = document.title;
+  const restaurantName = getSelectedRestaurantName();
+  const reportTitle = `Restaurant ${restaurantName} - Sales Transactions`;
+  document.title = reportTitle;
+  setPrintReportTitle(reportTitle);
+  const table = document.getElementById('salesTable');
+  let html = '';
+  if (table) {
+    html += table.outerHTML;
+  }
+  const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sales_transactions.xls';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    document.title = originalTitle;
+    setPrintReportTitle('');
   }, 100);
 }
 
@@ -1062,22 +1142,16 @@ function showSupplierDeleteModal(id) {
     </div>
   `;
   document.body.appendChild(overlay);
-  document.getElementById('modal-cancel-btn').onclick = () => {
-    overlay.remove();
-    supplierDeleteId = null;
-    renderSupplierTable();
-  };
+  document.getElementById('modal-cancel-btn').onclick = () => overlay.remove();
   document.getElementById('modal-delete-btn').onclick = async () => {
     overlay.remove();
     await confirmDeleteSupplierRow(id);
   };
 }
 
-window.deleteSupplierRow = function(id) {
-  supplierDeleteId = id;
-  renderSupplierTable();
+function deleteSupplierRow(id) {
   showSupplierDeleteModal(id);
-};
+}
 
 async function confirmDeleteSupplierRow(id) {
   const row = supplierData.find(r => r.id == id);
