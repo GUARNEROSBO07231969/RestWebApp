@@ -932,7 +932,7 @@ function renderSupplierKpiAndGraphs(filteredData) {
 function printSupplierPDF() {
   const originalTitle = document.title;
   const restaurantName = getSelectedRestaurantName();
-  const reportTitle = `Restaurant ${restaurantName} - Supplier Expenses`;
+  const reportTitle = `${restaurantName} - Supplier Expenses`;
   document.title = reportTitle;
   setPrintReportTitle(reportTitle);
   const form = document.getElementById('supplierForm');
@@ -957,7 +957,7 @@ function printSupplierPDF() {
 function printSupplierExcel() {
   const originalTitle = document.title;
   const restaurantName = getSelectedRestaurantName();
-  const reportTitle = `Restaurant ${restaurantName} - Supplier Expenses`;
+  const reportTitle = `${restaurantName} - Supplier Expenses`;
   document.title = reportTitle;
   setPrintReportTitle(reportTitle);
   const table = document.getElementById('supplierTable');
@@ -997,7 +997,7 @@ function setPrintReportTitle(title) {
 function printPDF() {
   const originalTitle = document.title;
   const restaurantName = getSelectedRestaurantName();
-  const reportTitle = `Restaurant ${restaurantName} - Sales Transactions`;
+  const reportTitle = `${restaurantName} - Sales`;
   document.title = reportTitle;
   setPrintReportTitle(reportTitle);
   // Hide form, search, nav, and tabs for print
@@ -1026,7 +1026,7 @@ function printPDF() {
 function printExcel() {
   const originalTitle = document.title;
   const restaurantName = getSelectedRestaurantName();
-  const reportTitle = `Restaurant ${restaurantName} - Sales Transactions`;
+  const reportTitle = `${restaurantName} - Sales`;
   document.title = reportTitle;
   setPrintReportTitle(reportTitle);
   const table = document.getElementById('salesTable');

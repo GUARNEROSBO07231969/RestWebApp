@@ -932,7 +932,7 @@ function renderSupplierKpiAndGraphs(filteredData) {
 function printSupplierPDF() {
   const originalTitle = document.title;
   const restaurantName = getSelectedRestaurantName();
-  const reportTitle = `Restaurant ${restaurantName} - Supplier Expenses`;
+  const reportTitle = `${restaurantName} - Supplier Expenses`;
   document.title = reportTitle;
   setPrintReportTitle(reportTitle);
   const form = document.getElementById('supplierForm');
@@ -957,7 +957,7 @@ function printSupplierPDF() {
 function printSupplierExcel() {
   const originalTitle = document.title;
   const restaurantName = getSelectedRestaurantName();
-  const reportTitle = `Restaurant ${restaurantName} - Supplier Expenses`;
+  const reportTitle = `${restaurantName} - Supplier Expenses`;
   document.title = reportTitle;
   setPrintReportTitle(reportTitle);
   const table = document.getElementById('supplierTable');
