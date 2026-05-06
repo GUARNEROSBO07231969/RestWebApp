@@ -56,7 +56,7 @@ async function loadRestaurants(){
 
 let currentPage = 1, pageSize = 15, allData = [], filteredData = [];
 
-async function loadData(){
+async function loadData(keepPage) {
   const id=document.getElementById('restaurantSelect').value;
   allData = await fetch('/api/sales?restaurantId='+id).then(r=>r.json());
   // Sort by date/time descending on initial load only
@@ -67,7 +67,7 @@ async function loadData(){
     return (b.id || 0) - (a.id || 0);
   });
   filteredData = allData.slice();
-  currentPage = 1;
+  if (!keepPage) currentPage = 1;
   renderTable();
 }
 
@@ -334,13 +334,15 @@ async function saveTx() {
     // Use Eastern Time for the date
     date: getEasternIsoString()
   };
+  let wasEdit = !!editId;
   if(editId){
     await fetch('/api/sales/'+editId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   }else{
     await fetch('/api/sales',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    currentPage = 1; // Only reset to page 1 for new transactions
   }
   editId = null; // Clear edit state after saving
-  await loadData();
+  await loadData(wasEdit);
   // Clear all input values after saving
   const ids = [
     'cashAmount', 'visaAmount', 'doordashAmount', 'grubhubAmount', 'ubereatsAmount', 'onlineAmount',
