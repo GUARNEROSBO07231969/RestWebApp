@@ -577,1050 +577,110 @@ th[onclick]:hover {
   }
 }
 @media print {
-  .kpi-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 12px !important;
-    width: 100vw !important;
-    margin-bottom: 12px !important;
-    margin-top: 8px !important;
-    transform: none !important;
-  }
-  .kpi {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    width: 100% !important;
-    min-width: 120px !important;
-    min-height: 70px !important;
-    max-height: 70px !important;
-    margin-bottom: 0 !important;
-    page-break-inside: avoid !important;
-    justify-content: center !important;
-  }
-  .form-grid,
-  .single-row-form,
-  .search-row,
-  .btn-row,
-  .btn,
-  .action-btn,
-  .print-btn,
-  .save-btn,
-  .cancel-btn,
-  .add-edit-title,
-  .page-navigation,
-  .input-group,
-  .pagination,
-  h3,
-  h2,
-  h1 {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  .print-btn-row {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 8px !important;
-    margin-bottom: 0 !important;
-    margin-top: 0 !important;
-  }
-  .restaurant-select {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Hide dark mode label in print */
-  .theme-toggle,
-  .theme-label {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Add space below KPIs for PDF view */
-  .kpi-grid {
-    margin-bottom: 32px !important;
-  }
-  /* Hide actions column in print */
-  th.actions,
-  td.actions {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Preserve KPI colors in print */
-  .kpi.cash { background: #22c55e !important; color: #fff !important; border: none !important; }
-  .kpi.visa { background: #2563eb !important; color: #fff !important; border: none !important; }
-  .kpi.spent { background: #f97316 !important; color: #fff !important; border: none !important; }
-  .kpi.total { background: #059669 !important; color: #fff !important; border: none !important; }
-  .kpi.net { background: #0ea5e9 !important; color: #fff !important; border: none !important; }
-  /* Ensure all KPIs are the same width, height, and font size in print */
-  .kpi {
-    min-width: 150px !important;
-    max-width: 150px !important;
-    min-height: 90px !important;
-    max-height: 90px !important;
-    font-size: 1.18rem !important;
-    border-radius: 14px !important;
-    box-shadow: 0 2px 8px 0 rgba(30,41,59,0.10) !important;
-    margin: 0 6px !important;
-    padding: 16px 10px 12px 10px !important;
-  }
-  .kpi span, .kpi strong, .kpi .kpi-pct {
-    font-size: 1.18rem !important;
-    line-height: 1.2 !important;
-    font-weight: 600 !important;
+  /* --- Compact Print for Sales Tab --- */
+  .sales-tab .modern, .sales-tab table.modern {
+    font-size: 10px !important;
+    line-height: 1.05 !important;
+    border-spacing: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
-  }
-  /* Hide Actions column when printing */
-  th:last-child, td:last-child {
-    display: none !important;
-  }
-}
-
-/* Print report title styling */
-@media print {
-  #printReportTitle {
-    display: block !important;
-    font-size: 2.2rem !important;
-    font-family: 'Segoe UI', 'Inter', Arial, sans-serif !important;
-    font-weight: 800 !important;
-    color: #222 !important;
-    margin-bottom: 18px !important;
-    text-align: center !important;
-    background: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    letter-spacing: 0.01em;
-  }
-  .top-bar, .theme-toggle, h2, h3, .tab-menu, .tab-content h3 {
-    display: none !important;
-  }
-}
-#printReportTitle {
-  display: none;
-}
-#grand-total-row-container {
-  margin-bottom: 2px !important;
-  margin-top: 0.5px !important;
-}
-#pagination.pagination {
-  margin-top: 2px !important;
-  margin-bottom: 0 !important;
-  padding: 0 2px !important;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
-  flex-wrap: wrap;
-  min-width: 0;
-  max-width: 100vw;
-  font-size: 11px !important;
-  height: 28px !important;
-}
-.pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 12px 0 0 0; }
-.pagination button { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
-.pagination button[disabled] { background: #a5b4fc; color: #e0e7ff; cursor: not-allowed; }
-.pagination button[style*='font-weight:bold'] { background: #1e40af; color: #fff; }
-.pagination .page-link, .pagination .page-item {
-  min-width: 22px !important;
-  min-height: 22px !important;
-  padding: 2px 6px !important;
-  font-size: 11px !important;
-  border-radius: 6px !important;
-  margin: 0 1px !important;
-  background: #e5e7eb !important;
-  color: #374151 !important;
-  border: none !important;
-  box-shadow: none !important;
-  transition: background 0.15s;
-}
-.pagination .page-link.active, .pagination .page-item.active {
-  background: #2563eb !important;
-  color: #fff !important;
-}
-.pagination .page-link:focus, .pagination .page-item:focus {
-  outline: 1.5px solid #2563eb !important;
-  background: #bae6fd !important;
-}
-.search-row {
-  margin-bottom: 2px !important;
-}
-/* Revert KPI total color to previous purple */
-.kpi.total {
-  background: #059669 !important;
-  color: #fff !important;
-}
-.kpi.net {
-  background: #0ea5e9 !important; /* blue-cyan for Gross Net Amount */
-  color: #fff !important;
-}
-
-/* --- Modern Inputs Enhancements (Additive) --- */
-.input-group input {
-  height: 12.54px !important; /* Reduced by 30% from previous 17.92px */
-  min-height: 12.54px !important;
-  font-size: 11px !important;
-  padding-top: 0.5px !important;
-  padding-bottom: 0.5px !important;
-  cursor: text;
-  z-index: 2;
-  position: relative;
-}
-.input-group label {
-  pointer-events: none;
-}
-.input-group {
-  cursor: text;
-}
-.input-group:active, .input-group:focus-within {
-  box-shadow: 0 0 0 2px #2563eb33;
-  border-color: #2563eb;
-}
-.input-group input:focus {
-  outline: none !important;
-  background: #e0f2fe !important;
-}
-.input-group input {
-  background-clip: padding-box;
-}
-.input-group {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* --- Input Button Height and Icon Adjustments (Additive) --- */
-.btn, .btn-row .btn {
-  padding: 4px 10px !important; /* Reduce vertical padding for height */
-  min-height: 18px !important;
-  font-size: 11px !important;
-  border-radius: 8px !important;
-}
-.btn .material-icons, .btn .icon, .btn svg, .btn-row .btn .material-icons, .btn-row .btn .icon {
-  font-size: 13px !important;
-  vertical-align: middle;
-  margin-right: 2px;
-}
-
-/* --- KPI Label and Amount Styling (Additive) --- */
-.kpi span {
-  display: block;
-  font-size: 1.38rem !important; /* 20% larger */
-  font-weight: 600;
-  margin-bottom: 2px;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
-}
-.kpi strong {
-  font-size: 2.3rem !important;
-  font-weight: 700;
-  margin-top: 0.1em;
-  line-height: 1.1;
-  display: block;
-}
-.kpi {
-  min-width: 120px;
-  min-height: 62px;
-  padding: 10px 6px 8px 6px !important;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* --- Sort Indicator Styling (Additive) --- */
-.sort-indicator {
-  font-size: 1.1em;
-  margin-left: 2px;
-  color: #2563eb;
-  vertical-align: middle;
-  transition: color 0.2s;
-}
-th[onclick] {
-  user-select: none;
-  position: relative;
-  background: linear-gradient(90deg, #e0f2fe 0%, #bae6fd 100%);
-  transition: background 0.2s;
-}
-th[onclick]:hover {
-  background: #bae6fd;
-}
-.single-row-form {
-  display: flex !important;
-  flex-wrap: nowrap !important;
-  gap: 6px !important;
-  margin-bottom: 4px !important;
-}
-.single-row-form .input-group {
-  min-width: 112px;
-  padding: 14px 10px 6px 34px;
-  font-size: 12px !important;
-  border-radius: 12px;
-}
-.single-row-form .input-group input {
-  font-size: 13px !important;
-  min-width: 0;
-  padding: 1.6px 0 !important;
-  height: 25.6px !important;
-  min-height: 25.6px !important;
-}
-.single-row-form .input-group label {
-  font-size: 12px !important;
-  color: #1e293b !important;
-  font-weight: 600;
-  top: 7px;
-  left: 34px;
-  transform: none;
-}
-.single-row-form .input-group input:not(:placeholder-shown)+label,
-.single-row-form .input-group input:focus+label {
-  top: -7px;
-  font-size: 11px !important;
-  color: #2563eb !important;
-}
-.kpi-pct {
-  display: block;
-  font-size: 1.05rem;
-  font-weight: 500;
-  margin-top: 2px;
-  opacity: 0.92;
-}
-.kpi.net .kpi-pct { color: #0ea5e9; } /* blue-cyan for Gross Net */
-.kpi.spent .kpi-pct { color: #f97316; } /* orange for Expense */
-.kpi.total .kpi-pct { color: #9333ea; } /* purple for Total */
-@media (max-width: 900px) {
-  .single-row-form {
-    flex-wrap: wrap !important;
-  }
-}
-@media print {
-  .kpi-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 12px !important;
-    width: 100vw !important;
-    margin-bottom: 12px !important;
-    margin-top: 8px !important;
-    transform: none !important;
-  }
-  .kpi {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
     width: 100% !important;
-    min-width: 120px !important;
-    min-height: 70px !important;
-    max-height: 70px !important;
-    margin-bottom: 0 !important;
+    table-layout: fixed !important;
+  }
+  .sales-tab .modern th, .sales-tab .modern td {
+    padding: 2px 3px !important;
+    font-size: 10px !important;
+    height: 16px !important;
+    min-width: 0 !important;
+    max-width: 80px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  .sales-tab .modern th {
+    font-weight: 700 !important;
+    background: #e0e7ef !important;
+  }
+  .sales-tab .modern td {
+    font-weight: 400 !important;
+    background: #fff !important;
+  }
+  .sales-tab .kpi-grid, .sales-tab .kpi {
+    display: none !important;
+  }
+  .sales-tab .print-btn-row {
+    display: none !important;
+  }
+  .sales-tab .tab-content {
+    padding: 4px 2px 2px 2px !important;
+    margin: 0 !important;
+  }
+  .sales-tab .grand-total-row td {
+    font-size: 10px !important;
+    padding: 2px 3px !important;
+  }
+  /* --- Remove Scrollbars and Enable Multi-Page Printing for Sales Tab --- */
+  .sales-tab, .sales-tab * {
+    overflow: visible !important;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+    max-width: 100vw !important;
+  }
+  .sales-tab ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    background: transparent !important;
+  }
+  .sales-tab .modern, .sales-tab table.modern {
+    width: 100% !important;
+    max-width: 100vw !important;
+    table-layout: auto !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+  .sales-tab .modern tr {
     page-break-inside: avoid !important;
-    justify-content: center !important;
+    break-inside: avoid !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
-  .form-grid,
-  .single-row-form,
-  .search-row,
-  .btn-row,
-  .btn,
-  .action-btn,
-  .print-btn,
-  .save-btn,
-  .cancel-btn,
-  .add-edit-title,
-  .page-navigation,
-  .input-group,
-  .pagination,
-  h3,
-  h2,
-  h1 {
+  .sales-tab .modern th, .sales-tab .modern td {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    max-width: 120px !important;
+    min-width: 40px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    background-clip: padding-box !important;
+  }
+  .sales-tab .modern {
+    page-break-after: auto !important;
+    break-after: auto !important;
+    page-break-before: auto !important;
+    break-before: auto !important;
+  }
+  .sales-tab .tab-content {
+    padding: 4px 2px 2px 2px !important;
+    margin: 0 !important;
+  }
+  .sales-tab .kpi-grid, .sales-tab .kpi, .sales-tab .print-btn-row {
     display: none !important;
-    visibility: hidden !important;
   }
-  .print-btn-row {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 8px !important;
-    margin-bottom: 0 !important;
-    margin-top: 0 !important;
-  }
-  .restaurant-select {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Hide dark mode label in print */
-  .theme-toggle,
-  .theme-label {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Add space below KPIs for PDF view */
-  .kpi-grid {
-    margin-bottom: 32px !important;
-  }
-  /* Hide actions column in print */
-  th.actions,
-  td.actions {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Preserve KPI colors in print */
-  .kpi.cash { background: #22c55e !important; color: #fff !important; border: none !important; }
-  .kpi.visa { background: #2563eb !important; color: #fff !important; border: none !important; }
-  .kpi.spent { background: #f97316 !important; color: #fff !important; border: none !important; }
-  .kpi.total { background: #059669 !important; color: #fff !important; border: none !important; }
-  .kpi.net { background: #0ea5e9 !important; color: #fff !important; border: none !important; }
-  /* Ensure all KPIs are the same width, height, and font size in print */
-  .kpi {
-    min-width: 150px !important;
-    max-width: 150px !important;
-    min-height: 90px !important;
-    max-height: 90px !important;
-    font-size: 1.18rem !important;
-    border-radius: 14px !important;
-    box-shadow: 0 2px 8px 0 rgba(30,41,59,0.10) !important;
-    margin: 0 6px !important;
-    padding: 16px 10px 12px 10px !important;
-  }
-  .kpi span, .kpi strong, .kpi .kpi-pct {
-    font-size: 1.18rem !important;
-    line-height: 1.2 !important;
-    font-weight: 600 !important;
+  .sales-tab * {
     margin: 0 !important;
     padding: 0 !important;
+    box-sizing: border-box !important;
   }
-  /* Hide Actions column when printing */
-  th:last-child, td:last-child {
-    display: none !important;
-  }
-}
-
-/* Print report title styling */
-@media print {
-  #printReportTitle {
-    display: block !important;
-    font-size: 2.2rem !important;
-    font-family: 'Segoe UI', 'Inter', Arial, sans-serif !important;
-    font-weight: 800 !important;
-    color: #222 !important;
-    margin-bottom: 18px !important;
-    text-align: center !important;
-    background: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    letter-spacing: 0.01em;
-  }
-  .top-bar, .theme-toggle, h2, h3, .tab-menu, .tab-content h3 {
-    display: none !important;
-  }
-}
-#printReportTitle {
-  display: none;
-}
-#grand-total-row-container {
-  margin-bottom: 2px !important;
-  margin-top: 0.5px !important;
-}
-#pagination.pagination {
-  margin-top: 2px !important;
-  margin-bottom: 0 !important;
-  padding: 0 2px !important;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
-  flex-wrap: wrap;
-  min-width: 0;
-  max-width: 100vw;
-  font-size: 11px !important;
-  height: 28px !important;
-}
-.pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 12px 0 0 0; }
-.pagination button { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
-.pagination button[disabled] { background: #a5b4fc; color: #e0e7ff; cursor: not-allowed; }
-.pagination button[style*='font-weight:bold'] { background: #1e40af; color: #fff; }
-.pagination .page-link, .pagination .page-item {
-  min-width: 22px !important;
-  min-height: 22px !important;
-  padding: 2px 6px !important;
-  font-size: 11px !important;
-  border-radius: 6px !important;
-  margin: 0 1px !important;
-  background: #e5e7eb !important;
-  color: #374151 !important;
-  border: none !important;
-  box-shadow: none !important;
-  transition: background 0.15s;
-}
-.pagination .page-link.active, .pagination .page-item.active {
-  background: #2563eb !important;
-  color: #fff !important;
-}
-.pagination .page-link:focus, .pagination .page-item:focus {
-  outline: 1.5px solid #2563eb !important;
-  background: #bae6fd !important;
-}
-.search-row {
-  margin-bottom: 2px !important;
-}
-/* Revert KPI total color to previous purple */
-.kpi.total {
-  background: #059669 !important;
-  color: #fff !important;
-}
-.kpi.net {
-  background: #0ea5e9 !important; /* blue-cyan for Gross Net Amount */
-  color: #fff !important;
-}
-
-/* --- Modern Inputs Enhancements (Additive) --- */
-.input-group input {
-  height: 12.54px !important; /* Reduced by 30% from previous 17.92px */
-  min-height: 12.54px !important;
-  font-size: 11px !important;
-  padding-top: 0.5px !important;
-  padding-bottom: 0.5px !important;
-  cursor: text;
-  z-index: 2;
-  position: relative;
-}
-.input-group label {
-  pointer-events: none;
-}
-.input-group {
-  cursor: text;
-}
-.input-group:active, .input-group:focus-within {
-  box-shadow: 0 0 0 2px #2563eb33;
-  border-color: #2563eb;
-}
-.input-group input:focus {
-  outline: none !important;
-  background: #e0f2fe !important;
-}
-.input-group input {
-  background-clip: padding-box;
-}
-.input-group {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* --- Input Button Height and Icon Adjustments (Additive) --- */
-.btn, .btn-row .btn {
-  padding: 4px 10px !important; /* Reduce vertical padding for height */
-  min-height: 18px !important;
-  font-size: 11px !important;
-  border-radius: 8px !important;
-}
-.btn .material-icons, .btn .icon, .btn svg, .btn-row .btn .material-icons, .btn-row .btn .icon {
-  font-size: 13px !important;
-  vertical-align: middle;
-  margin-right: 2px;
-}
-
-/* --- KPI Label and Amount Styling (Additive) --- */
-.kpi span {
-  display: block;
-  font-size: 1.38rem !important; /* 20% larger */
-  font-weight: 600;
-  margin-bottom: 2px;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
-}
-.kpi strong {
-  font-size: 2.3rem !important;
-  font-weight: 700;
-  margin-top: 0.1em;
-  line-height: 1.1;
-  display: block;
-}
-.kpi {
-  min-width: 120px;
-  min-height: 62px;
-  padding: 10px 6px 8px 6px !important;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* --- Sort Indicator Styling (Additive) --- */
-.sort-indicator {
-  font-size: 1.1em;
-  margin-left: 2px;
-  color: #2563eb;
-  vertical-align: middle;
-  transition: color 0.2s;
-}
-th[onclick] {
-  user-select: none;
-  position: relative;
-  background: linear-gradient(90deg, #e0f2fe 0%, #bae6fd 100%);
-  transition: background 0.2s;
-}
-th[onclick]:hover {
-  background: #bae6fd;
-}
-.single-row-form {
-  display: flex !important;
-  flex-wrap: nowrap !important;
-  gap: 6px !important;
-  margin-bottom: 4px !important;
-}
-.single-row-form .input-group {
-  min-width: 112px;
-  padding: 14px 10px 6px 34px;
-  font-size: 12px !important;
-  border-radius: 12px;
-}
-.single-row-form .input-group input {
-  font-size: 13px !important;
-  min-width: 0;
-  padding: 1.6px 0 !important;
-  height: 25.6px !important;
-  min-height: 25.6px !important;
-}
-.single-row-form .input-group label {
-  font-size: 12px !important;
-  color: #1e293b !important;
-  font-weight: 600;
-  top: 7px;
-  left: 34px;
-  transform: none;
-}
-.single-row-form .input-group input:not(:placeholder-shown)+label,
-.single-row-form .input-group input:focus+label {
-  top: -7px;
-  font-size: 11px !important;
-  color: #2563eb !important;
-}
-.kpi-pct {
-  display: block;
-  font-size: 1.05rem;
-  font-weight: 500;
-  margin-top: 2px;
-  opacity: 0.92;
-}
-.kpi.net .kpi-pct { color: #0ea5e9; } /* blue-cyan for Gross Net */
-.kpi.spent .kpi-pct { color: #f97316; } /* orange for Expense */
-.kpi.total .kpi-pct { color: #9333ea; } /* purple for Total */
-@media (max-width: 900px) {
-  .single-row-form {
-    flex-wrap: wrap !important;
-  }
-}
-@media print {
-  .kpi-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 12px !important;
-    width: 100vw !important;
-    margin-bottom: 12px !important;
-    margin-top: 8px !important;
-    transform: none !important;
-  }
-  .kpi {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    width: 100% !important;
-    min-width: 120px !important;
-    min-height: 70px !important;
-    max-height: 70px !important;
-    margin-bottom: 0 !important;
-    page-break-inside: avoid !important;
-    justify-content: center !important;
-  }
-  .form-grid,
-  .single-row-form,
-  .search-row,
-  .btn-row,
-  .btn,
-  .action-btn,
-  .print-btn,
-  .save-btn,
-  .cancel-btn,
-  .add-edit-title,
-  .page-navigation,
-  .input-group,
-  .pagination,
-  h3,
-  h2,
-  h1 {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  .print-btn-row {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 8px !important;
-    margin-bottom: 0 !important;
-    margin-top: 0 !important;
-  }
-  .restaurant-select {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Hide dark mode label in print */
-  .theme-toggle,
-  .theme-label {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Add space below KPIs for PDF view */
-  .kpi-grid {
-    margin-bottom: 32px !important;
-  }
-  /* Hide actions column in print */
-  th.actions,
-  td.actions {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Preserve KPI colors in print */
-  .kpi.cash { background: #22c55e !important; color: #fff !important; border: none !important; }
-  .kpi.visa { background: #2563eb !important; color: #fff !important; border: none !important; }
-  .kpi.spent { background: #f97316 !important; color: #fff !important; border: none !important; }
-  .kpi.total { background: #059669 !important; color: #fff !important; border: none !important; }
-  .kpi.net { background: #0ea5e9 !important; color: #fff !important; border: none !important; }
-  /* Ensure all KPIs are the same width, height, and font size in print */
-  .kpi {
-    min-width: 150px !important;
-    max-width: 150px !important;
-    min-height: 90px !important;
-    max-height: 90px !important;
-    font-size: 1.18rem !important;
-    border-radius: 14px !important;
-    box-shadow: 0 2px 8px 0 rgba(30,41,59,0.10) !important;
-    margin: 0 6px !important;
-    padding: 16px 10px 12px 10px !important;
-  }
-  .kpi span, .kpi strong, .kpi .kpi-pct {
-    font-size: 1.18rem !important;
-    line-height: 1.2 !important;
-    font-weight: 600 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  /* Hide Actions column when printing */
-  th:last-child, td:last-child {
-    display: none !important;
-  }
-}
-
-/* Print report title styling */
-@media print {
-  #printReportTitle {
-    display: block !important;
-    font-size: 2.2rem !important;
-    font-family: 'Segoe UI', 'Inter', Arial, sans-serif !important;
-    font-weight: 800 !important;
-    color: #222 !important;
-    margin-bottom: 18px !important;
-    text-align: center !important;
-    background: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    letter-spacing: 0.01em;
-  }
-  .top-bar, .theme-toggle, h2, h3, .tab-menu, .tab-content h3 {
-    display: none !important;
-  }
-}
-#printReportTitle {
-  display: none;
-}
-#grand-total-row-container {
-  margin-bottom: 2px !important;
-  margin-top: 0.5px !important;
-}
-#pagination.pagination {
-  margin-top: 2px !important;
-  margin-bottom: 0 !important;
-  padding: 0 2px !important;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
-  flex-wrap: wrap;
-  min-width: 0;
-  max-width: 100vw;
-  font-size: 11px !important;
-  height: 28px !important;
-}
-.pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 12px 0 0 0; }
-.pagination button { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
-.pagination button[disabled] { background: #a5b4fc; color: #e0e7ff; cursor: not-allowed; }
-.pagination button[style*='font-weight:bold'] { background: #1e40af; color: #fff; }
-.pagination .page-link, .pagination .page-item {
-  min-width: 22px !important;
-  min-height: 22px !important;
-  padding: 2px 6px !important;
-  font-size: 11px !important;
-  border-radius: 6px !important;
-  margin: 0 1px !important;
-  background: #e5e7eb !important;
-  color: #374151 !important;
-  border: none !important;
-  box-shadow: none !important;
-  transition: background 0.15s;
-}
-.pagination .page-link.active, .pagination .page-item.active {
-  background: #2563eb !important;
-  color: #fff !important;
-}
-.pagination .page-link:focus, .pagination .page-item:focus {
-  outline: 1.5px solid #2563eb !important;
-  background: #bae6fd !important;
-}
-.search-row {
-  margin-bottom: 2px !important;
-}
-/* Revert KPI total color to previous purple */
-.kpi.total {
-  background: #059669 !important;
-  color: #fff !important;
-}
-.kpi.net {
-  background: #0ea5e9 !important; /* blue-cyan for Gross Net Amount */
-  color: #fff !important;
-}
-
-/* --- Modern Inputs Enhancements (Additive) --- */
-.input-group input {
-  height: 12.54px !important; /* Reduced by 30% from previous 17.92px */
-  min-height: 12.54px !important;
-  font-size: 11px !important;
-  padding-top: 0.5px !important;
-  padding-bottom: 0.5px !important;
-  cursor: text;
-  z-index: 2;
-  position: relative;
-}
-.input-group label {
-  pointer-events: none;
-}
-.input-group {
-  cursor: text;
-}
-.input-group:active, .input-group:focus-within {
-  box-shadow: 0 0 0 2px #2563eb33;
-  border-color: #2563eb;
-}
-.input-group input:focus {
-  outline: none !important;
-  background: #e0f2fe !important;
-}
-.input-group input {
-  background-clip: padding-box;
-}
-.input-group {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* --- Input Button Height and Icon Adjustments (Additive) --- */
-.btn, .btn-row .btn {
-  padding: 4px 10px !important; /* Reduce vertical padding for height */
-  min-height: 18px !important;
-  font-size: 11px !important;
-  border-radius: 8px !important;
-}
-.btn .material-icons, .btn .icon, .btn svg, .btn-row .btn .material-icons, .btn-row .btn .icon {
-  font-size: 13px !important;
-  vertical-align: middle;
-  margin-right: 2px;
-}
-
-/* --- KPI Label and Amount Styling (Additive) --- */
-.kpi span {
-  display: block;
-  font-size: 1.38rem !important; /* 20% larger */
-  font-weight: 600;
-  margin-bottom: 2px;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
-}
-.kpi strong {
-  font-size: 2.3rem !important;
-  font-weight: 700;
-  margin-top: 0.1em;
-  line-height: 1.1;
-  display: block;
-}
-.kpi {
-  min-width: 120px;
-  min-height: 62px;
-  padding: 10px 6px 8px 6px !important;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* --- Sort Indicator Styling (Additive) --- */
-.sort-indicator {
-  font-size: 1.1em;
-  margin-left: 2px;
-  color: #2563eb;
-  vertical-align: middle;
-  transition: color 0.2s;
-}
-th[onclick] {
-  user-select: none;
-  position: relative;
-  background: linear-gradient(90deg, #e0f2fe 0%, #bae6fd 100%);
-  transition: background 0.2s;
-}
-th[onclick]:hover {
-  background: #bae6fd;
-}
-.single-row-form {
-  display: flex !important;
-  flex-wrap: nowrap !important;
-  gap: 6px !important;
-  margin-bottom: 4px !important;
-}
-.single-row-form .input-group {
-  min-width: 112px;
-  padding: 14px 10px 6px 34px;
-  font-size: 12px !important;
-  border-radius: 12px;
-}
-.single-row-form .input-group input {
-  font-size: 13px !important;
-  min-width: 0;
-  padding: 1.6px 0 !important;
-  height: 25.6px !important;
-  min-height: 25.6px !important;
-}
-.single-row-form .input-group label {
-  font-size: 12px !important;
-  color: #1e293b !important;
-  font-weight: 600;
-  top: 7px;
-  left: 34px;
-  transform: none;
-}
-.single-row-form .input-group input:not(:placeholder-shown)+label,
-.single-row-form .input-group input:focus+label {
-  top: -7px;
-  font-size: 11px !important;
-  color: #2563eb !important;
-}
-.kpi-pct {
-  display: block;
-  font-size: 1.05rem;
-  font-weight: 500;
-  margin-top: 2px;
-  opacity: 0.92;
-}
-.kpi.net .kpi-pct { color: #0ea5e9; } /* blue-cyan for Gross Net */
-.kpi.spent .kpi-pct { color: #f97316; } /* orange for Expense */
-.kpi.total .kpi-pct { color: #9333ea; } /* purple for Total */
-@media (max-width: 900px) {
-  .single-row-form {
-    flex-wrap: wrap !important;
-  }
-}
-@media print {
-  .kpi-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 12px !important;
-    width: 100vw !important;
-    margin-bottom: 12px !important;
-    margin-top: 8px !important;
-    transform: none !important;
-  }
-  .kpi {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    width: 100% !important;
-    min-width: 120px !important;
-    min-height: 70px !important;
-    max-height: 70px !important;
-    margin-bottom: 0 !important;
-    page-break-inside: avoid !important;
-    justify-content: center !important;
-  }
-  .form-grid,
-  .single-row-form,
-  .search-row,
-  .btn-row,
-  .btn,
-  .action-btn,
-  .print-btn,
-  .save-btn,
-  .cancel-btn,
-  .add-edit-title,
-  .page-navigation,
-  .input-group,
-  .pagination,
-  h3,
-  h2,
-  h1 {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  .print-btn-row {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 8px !important;
-    margin-bottom: 0 !important;
-    margin-top: 0 !important;
-  }
-  .restaurant-select {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Hide dark mode label in print */
-  .theme-toggle,
-  .theme-label {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Add space below KPIs for PDF view */
-  .kpi-grid {
-    margin-bottom: 32px !important;
-  }
-  /* Hide actions column in print */
-  th.actions,
-  td.actions {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  /* Preserve KPI colors in print */
-  .kpi.cash { background: #22c55e !important; color: #fff !important; border: none !important; }
-  .kpi.visa { background: #2563eb !important; color: #fff !important; border: none !important; }
-  .kpi.spent { background: #f97316 !important; color: #fff !important; border: none !important; }
-  .kpi.total { background: #059669 !important; color: #fff !important; border: none !important; }
-  .kpi.net { background: #0ea5e9 !important; color: #fff !important; border: none !important; }
-  /* Ensure all KPIs are the same width, height, and font size in print */
-  .kpi {
-    min-width: 150px !important;
-    max-width: 150px !important;
-    min-height: 90px !important;
-    max-height: 90px !important;
-    font-size: 1.18rem !important;
-    border-radius: 14px !important;
-    box-shadow: 0 2px 8px 0 rgba(30,41,59,0.10) !important;
-    margin: 0 6px !important;
-    padding: 16px 10px 12px 10px !important;
-  }
-  .kpi span, .kpi strong, .kpi .kpi-pct {
-    font-size: 1.18rem !important;
-    line-height: 1.2 !important;
-    font-weight: 600 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  /* Hide Actions column when printing */
-  th:last-child, td:last-child {
-    display: none !important;
+  /* Ensure body and html allow page breaks */
+  html, body {
+    overflow: visible !important;
+    max-width: 100vw !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
+    page-break-before: auto !important;
+    break-before: auto !important;
   }
 }
 
@@ -1643,7 +703,7 @@ th[onclick]:hover {
   position: relative;
   top: 2px;
   padding: 7.5px 19px 4.5px 19px; /* reduce by 10% */
-  font-size: 0.92rem; /* reduce by 10% from 0.85rem */
+  font-size:  0.92rem; /* reduce by 10% from 0.85rem */
   background: linear-gradient(180deg, #e0e7ef 80%, #f1f5f9 100%);
   border: none;
   border-bottom: none;
@@ -1831,4 +891,104 @@ table.modern tbody tr:hover, #supplierTable tbody tr:hover {
 }
 .sales-table td, .sales-table th {
   font-size: 0.9em; /* Reduced by 10% for compactness */
+}
+
+/* --- Isolated Folder Tab Menu Styles (scoped under .folder-tab-menu) --- */
+.folder-tab-menu {
+
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  border-bottom: 3px solid #2563eb;
+  background: #f1f5f9;
+  padding: 0;
+  margin-bottom: 0;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 2px 8px #2563eb11;
+  gap: 0;
+  min-height: 38px;
+  font-size: 1.05em !important;
+  height: 42px !important;
+}
+.folder-tab-menu .folder-tab {
+  position: relative;
+  top: 2px;
+  padding: 12px 25px !important;
+  font-size: 1.05em !important;
+  background: linear-gradient(180deg, #e0e7ef 80%, #f1f5f9 100%);
+  border: none;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  margin-right: 0;
+  color: #2563eb;
+  font-weight: 600;
+  transition: background 0.35s cubic-bezier(.4,0,.2,1), color 0.18s, box-shadow 0.35s cubic-bezier(.4,0,.2,1), transform 0.18s;
+  box-shadow: 0 2px 8px #2563eb11, 0 6px 24px #3b82f611 inset;
+  z-index: 2;
+  outline: none;
+  overflow: hidden;
+}
+.folder-tab-menu .folder-tab .tab-icon {
+  font-size: 1.08em;
+  margin-right: 5px;
+  filter: drop-shadow(0 1px 2px #3b82f6cc);
+  transition: filter 0.3s, color 0.3s, transform 0.3s;
+}
+.folder-tab-menu .folder-tab.folder-tab-active {
+  background: linear-gradient(180deg, #3b82f6 0%, #fff 100%);
+  color: #1e293b;
+  border-bottom: 3px solid #fff;
+  box-shadow: 0 -2px 16px #2563eb22, 0 2px 8px #2563eb11, 0 8px 32px #a5b4fc22 inset;
+  font-weight: 700;
+  z-index: 3;
+  transform: translateY(-2px) scale(1.06);
+  animation: tabHighlightFadeBlue 0.5s;
+}
+.folder-tab-menu .folder-tab.folder-tab-active .tab-icon {
+  color: #3b82f6;
+  filter: drop-shadow(0 0 8px #a5b4fc);
+  transform: scale(1.18) rotate(-8deg);
+}
+.folder-tab-menu .folder-tab:not(.folder-tab-active):hover, .folder-tab-menu .folder-tab:focus-visible {
+  background: linear-gradient(180deg, #dbeafe 80%, #e0e7ef 100%);
+  color: #1e40af;
+  box-shadow: 0 4px 16px #2563eb22, 0 2px 8px #a5b4fc11;
+  transform: translateY(-1px) scale(1.02);
+}
+.folder-tab-menu .folder-tab-slider {
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  height: 5px;
+  width: 0;
+  background: linear-gradient(90deg, #3b82f6 0%, #a78bfa 100%);
+  border-radius: 2px 2px 0 0;
+  transition: left 0.35s cubic-bezier(.4,0,1,1.4), width 0.35s cubic-bezier(.4,0,1,1.4);
+  z-index: 4;
+  display: block !important;
+  animation: tabSliderBounce 0.5s;
+}
+.folder-tab-menu .folder-tab-content {
+  background: #fff;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 2px 12px #2563eb11;
+  border: 2.5px solid transparent;
+  border-top: none;
+  padding: 10px 10px 5px 10px;
+  margin-top: -2px;
+  z-index: 1;
+  animation: tabContentFadeIn 0.35s cubic-bezier(.4,0,.2,1);
+}
+@media print {
+  /* --- Print totals only on last page for Sales Tab --- */
+  .sales-tab .modern tfoot {
+    display: table-footer-group !important;
+  }
+  .sales-tab .modern tfoot .grand-total-row {
+    display: table-row !important;
+  }
+  .sales-tab .modern tbody .grand-total-row {
+    display: none !important;
+  }
 }
