@@ -72,11 +72,6 @@
       </div>
     </div>
 
-    <div class="btn-row" style="margin-bottom:4px;justify-content:flex-end">
-      <button class="btn btn-secondary" onclick="printPDF()">🖨️ Print PDF</button>
-      <button class="btn btn-secondary" onclick="printExcel()">📥 Print Excel</button>
-    </div>
-
     <div class="date-range-filter" style="display:flex;flex-direction:row;align-items:center;justify-content:flex-start;margin-bottom:8px;gap:10px;">
       <label for="dateFrom" style="font-size:0.95em;font-weight:600;margin-bottom:0;">From</label>
       <input id="dateFrom" type="date" style="width:120px;padding:4px 8px;font-size:0.95em;border-radius:6px;border:1px solid #cbd5e1;" onchange="filterTable()" placeholder="MM/DD/YYYY">
@@ -90,6 +85,8 @@
 
     <div class="search-row" style="margin-bottom:4px;display:flex;align-items:center;gap:8px">
       <input id="tableSearch" type="text" placeholder="🔍 Search table..." style="flex:1;max-width:260px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;font-size:13px;" oninput="filterTable()">
+      <button class="btn btn-secondary" onclick="printPDF()">🖨️ Print PDF</button>
+      <button class="btn btn-secondary" onclick="printExcel()">📥 Print Excel</button>
     </div>
 
     <table class="modern sales-table" id="salesTable">
@@ -149,12 +146,10 @@
         <button type="button" class="btn btn-secondary" onclick="supplierEditId=null;clearSupplierForm();renderSupplierTable();">✖ Cancel</button>
       </div>
     </form>
-    <div class="btn-row" style="margin-bottom:4px;justify-content:flex-end">
-      <button class="btn btn-secondary" onclick="printSupplierPDF()">🖨️ Print PDF</button>
-      <button class="btn btn-secondary" onclick="printSupplierExcel()">📥 Print Excel</button>
-    </div>
     <div class="search-row" style="margin-bottom:4px;display:flex;align-items:center;gap:8px">
       <input id="supplierTableSearch" type="text" placeholder="🔍 Search table..." style="flex:1;max-width:260px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;font-size:13px;" oninput="supplierTableSearchTerm=this.value.trim().toLowerCase();renderSupplierTable();">
+      <button class="btn btn-secondary" onclick="printSupplierPDF()">🖨️ Print PDF</button>
+      <button class="btn btn-secondary" onclick="printSupplierExcel()">📥 Print Excel</button>
     </div>
     <table class="modern" id="supplierTable">
       <thead>
@@ -171,7 +166,7 @@
       <tbody id="supplierRows"></tbody>
       <tfoot>
         <tr class="grand-total-row">
-          <td class="grand-label">Grand Total</td>
+          <td class="grand-label">Totals</td>
           <td></td>
           <td></td>
           <td></td>

@@ -919,3 +919,17 @@ table.modern tbody tr:hover, #supplierTable tbody tr:hover {
 .tab .tab-icon {
   font-size: 0.8748em !important; /* 0.972em * 0.9 = 0.8748em */
 }
+.footer-total-row td#footer-expenseAmount {
+  font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+  font-size: 0.96em !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.01em !important;
+  vertical-align: middle !important;
+  padding: 6px 8px !important;
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border-top: 2.5px solid #2563eb !important;
+  box-shadow: 0 2px 8px #2563eb22;
+  text-align: left !important;
+}
