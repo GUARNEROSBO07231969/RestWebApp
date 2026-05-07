@@ -141,19 +141,23 @@
       <span>🔒</span>
     </div>
     <div class="login-title">Sign In</div>
-    <form class="login-form" method="post" action="/login">
-      <div class="input-group">
-        <span class="input-icon">👤</span>
-        <input id="username" name="username" type="text" required placeholder=" " autocomplete="username" />
-        <label for="username">Username</label>
+    <form class="login-form" method="post" action="/login" autocomplete="on" style="gap: 28px;">
+      <div class="input-group" style="width: 70%; min-height: 64px;">
+        <span class="input-icon" style="font-size:1.5em;">👤</span>
+        <input id="username" name="username" type="text" required placeholder="" autocomplete="username"
+               style="font-size:1rem !important; height:20px !important; padding-left:16px; border:2.5px solid #2563eb; background:#f8fafc; border-radius:8px; box-shadow:0 2px 8px #e0e7ef;"
+               aria-label="Username" autofocus />
+        <label for="username" style="font-size:1.08rem; left: 48px;">Username</label>
       </div>
-      <div class="input-group">
-        <span class="input-icon">🔑</span>
-        <input id="password" name="password" type="password" required placeholder=" " autocomplete="current-password" />
-        <label for="password">Password</label>
+      <div class="input-group" style="width: 70%; min-height: 64px;">
+        <span class="input-icon" style="font-size:1.5em;">🔑</span>
+        <input id="password" name="password" type="password" required placeholder="" autocomplete="current-password"
+               style="font-size:1rem !important; height:20px !important; padding-left:16px; border:2.5px solid #2563eb; background:#f8fafc; border-radius:8px; box-shadow:0 2px 8px #e0e7ef;"
+               aria-label="Password" />
+        <label for="password" style="font-size:1.08rem; left: 48px;">Password</label>
       </div>
       <div th:if="${param.error}" class="error-message login-form">Invalid username or password</div>
-      <button class="login-btn" type="submit">Login</button>
+      <button class="login-btn" type="submit" style="font-size:1.22rem; padding: 18px 0; border-radius: 18px;">Login</button>
     </form>
   </div>
 </body>
