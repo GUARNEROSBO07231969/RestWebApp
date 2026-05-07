@@ -584,11 +584,11 @@ function renderSupplierPagination(filteredLength) {
   const pageCount = Math.ceil(filteredLength / supplierPageSize);
   let html = '';
   if (pageCount > 1) {
-    html += `<button onclick="gotoSupplierPage(${supplierPage-1})" ${supplierPage===1?'disabled':''}>Prev</button>`;
+    html += `<button class=\"pagination-btn\" style=\"padding:6.7px 15.4px;border-radius:9px;border:none;font-size:0.62rem;margin:0 1.5px;\" onclick=\"gotoSupplierPage(${supplierPage-1})\" ${supplierPage===1?'disabled':''}>Prev</button>`;
     for(let i=1;i<=pageCount;i++) {
-      html += `<button onclick="gotoSupplierPage(${i})" ${i===supplierPage?'style=\'font-weight:bold\'':''}>${i}</button>`;
+      html += `<button class=\"pagination-btn\" style=\"padding:6.7px 15.4px;border-radius:9px;border:none;font-size:0.62rem;margin:0 1.5px;${i===supplierPage?'font-weight:bold;background:#2563eb;color:#fff;':''}\" onclick=\"gotoSupplierPage(${i})\">${i}</button>`;
     }
-    html += `<button onclick="gotoSupplierPage(${supplierPage+1})" ${supplierPage===pageCount?'disabled':''}>Next</button>`;
+    html += `<button class=\"pagination-btn\" style=\"padding:6.7px 15.4px;border-radius:9px;border:none;font-size:0.62rem;margin:0 1.5px;\" onclick=\"gotoSupplierPage(${supplierPage+1})\" ${supplierPage===pageCount?'disabled':''}>Next</button>`;
   }
   pagination.innerHTML = html;
 }
@@ -678,7 +678,9 @@ function renderSupplierTable() {
   // Set grand total in the tfoot
   const grandTotalCell = document.getElementById('supplier-grand-total');
   if (grandTotalCell) {
-    grandTotalCell.textContent = `$${totalAmount.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    // Calculate grand total from ALL filtered rows, not just current page
+    const grandTotal = filtered.reduce((sum, row) => sum + (Number(row.invoiceAmount) || 0), 0);
+    grandTotalCell.textContent = `$${grandTotal.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2})}`;
   }
   renderSupplierPagination(filtered.length);
   renderSupplierKpiAndGraphs(filtered);
@@ -1185,3 +1187,13 @@ function switchTab(tab) {
     setTimeout(() => { loadSupplierData(); }, 0); // Ensure content is visible before loading data
   }
 }
+
+// --- Fix Supplier Expenses Grand Total to sum all filtered invoices, not just the current page ---
+// In the function that renders the supplier table and updates the grand total (likely renderSupplierTable),
+// ensure the grand total is calculated from the full filteredSupplierData, not just the paged data.
+//
+// Example fix:
+// let grandTotal = filteredSupplierData.reduce((sum, tx) => sum + (parseFloat(tx.invoiceAmount) || 0), 0);
+// document.getElementById('supplier-grand-total').textContent = grandTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+//
+// Make sure this code runs every time the table is rendered, and uses the full filteredSupplierData array.
