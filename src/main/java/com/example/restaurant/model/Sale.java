@@ -52,7 +52,7 @@ public class Sale {
     public Double getExpenseAmount() { return expenseAmount; }
     public void setExpenseAmount(Double expenseAmount) { this.expenseAmount = expenseAmount; }
 
-    @Column(name = "netsale_amount")
+    @Column(name = "calculated_sale_amount")
     public Double getNetsaleAmount() { return netsaleAmount; }
     public void setNetsaleAmount(Double netsaleAmount) { this.netsaleAmount = netsaleAmount; }
 
