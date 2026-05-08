@@ -205,7 +205,7 @@ function renderTable() {
   const rows = document.getElementById('rows');
   const pagination = document.getElementById('pagination');
   // Totals for footer
-  let totalCash=0, totalVisa=0, totalDoordash=0, totalGrubhub=0, totalUber=0, totalOnline=0, totalExpense=0, totalSale=0, totalNet=0;
+  let totalCash=0, totalVisa=0, totalDoordash=0, totalGrubhub=0, totalUber=0, totalOnline=0, totalExpense=0, totalSale=0, totalNet=0, totalCapturedSale=0;
   let filteredData = getFilteredData();
   // DO NOT sort filteredData here; keep backend order
   // filteredData.sort(...); // <-- Make sure this is removed/commented
@@ -219,6 +219,7 @@ function renderTable() {
     totalExpense += x.expenseAmount||0;
     totalSale += (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
     totalNet += (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
+    totalCapturedSale += x.capturedSaleAmount||0;
   });
   const start = (currentPage-1)*pageSize;
   const pageData = filteredData.slice(start, start+pageSize);
@@ -232,6 +233,7 @@ function renderTable() {
       : '';
     rows.innerHTML+=`<tr${highlight}>
       <td>${x.date ? x.date.substring(0,10) : ''}</td>
+      <td>${fmt(x.capturedSaleAmount||0)}</td>
       <td>${fmt(x.cashAmount)}</td>
       <td>${fmt(x.visaAmount)}</td>
       <td>${fmt(x.doordashAmount||0)}</td>
@@ -241,7 +243,7 @@ function renderTable() {
       <td>${x.storeName??''}</td>
       <td>${fmt(x.expenseAmount||0)}</td>
       <td>${fmt(saleAmount)}</td>
-      <td><button class="action-btn edit-btn" onclick="editTx(${x.id},${netSaleAmount},${x.cashAmount},${x.visaAmount},${x.doordashAmount||0},${x.grubhubAmount||0},${x.ubereatsAmount||0},${x.onlineAmount||0},'${x.storeName??''}',${x.expenseAmount||0})">Edit</button> <button class="action-btn delete-btn" onclick="delTx(${x.id})">Delete</button></td>
+      <td><button class="action-btn edit-btn" onclick="editTx(${x.id},${netSaleAmount},${x.cashAmount},${x.visaAmount},${x.doordashAmount||0},${x.grubhubAmount||0},${x.ubereatsAmount||0},${x.onlineAmount||0},'${x.storeName??''}',${x.expenseAmount||0},${x.capturedSaleAmount||0})">Edit</button> <button class="action-btn delete-btn" onclick="delTx(${x.id})">Delete</button></td>
     </tr>`
   });
   // Update footer totals
@@ -253,6 +255,7 @@ function renderTable() {
   document.getElementById('footer-onlineAmount').textContent = fmt(totalOnline);
   document.getElementById('footer-expenseAmount').textContent = fmt(totalExpense);
   document.getElementById('footer-saleAmount').textContent = fmt(totalSale);
+  document.getElementById('footer-capturedSaleAmount').textContent = fmt(totalCapturedSale);
   // Update KPIs: Grand Total Expense and Grand Total Sales
   spentVal.textContent = fmt(totalExpense);
   totalVal.textContent = fmt(totalSale);
@@ -284,7 +287,7 @@ function gotoPage(page) {
   renderTable();
 }
 
-function editTx(id, net, c, v, doordash, grubhub, ubereats, online, store, s) {
+function editTx(id, net, c, v, doordash, grubhub, ubereats, online, store, s, capturedSaleAmount) {
   editId = id;
   sortColumn = null; // Disable sorting when editing
   renderTable();
@@ -296,6 +299,7 @@ function editTx(id, net, c, v, doordash, grubhub, ubereats, online, store, s) {
   document.getElementById('onlineAmount').value = online != null ? String(online) : '';
   document.getElementById('storeName').value = store != null ? store : '';
   document.getElementById('expenseAmount').value = s != null ? String(s) : '';
+  document.getElementById('capturedSaleAmount').value = capturedSaleAmount != null ? String(capturedSaleAmount) : '0';
   recalcTotal();
 }
 function cancelEdit(){
@@ -666,7 +670,7 @@ function renderSupplierTable() {
     }
     tbody.innerHTML += `<tr${highlight}>
       <td>${row.supplierName}</td>
-      <td>${row.transactionDate}</td>
+      <td>${row.transactionDate ? row.transactionDate : ''}</td>
       <td>${row.invoiceNumber}</td>
       <td>${row.checkNumber}</td>
       <td>$${Number(row.invoiceAmount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>

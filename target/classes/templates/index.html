@@ -107,6 +107,7 @@
       <thead>
         <tr>
           <th onclick="sortTable('date')" style="cursor:pointer;background:var(--table-head);" title="Sort by Date">Date <span class="sort-indicator" id="sort-date"></span></th>
+          <th onclick="sortTable('capturedSaleAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Captured Sale Amount">Captured Sale Amount <span class="sort-indicator" id="sort-capturedSaleAmount"></span></th>
           <th onclick="sortTable('cashAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Cash Amount">Cash Amount <span class="sort-indicator" id="sort-cashAmount"></span></th>
           <th onclick="sortTable('visaAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Visa Amount">Visa Amount <span class="sort-indicator" id="sort-visaAmount"></span></th>
           <th onclick="sortTable('doordashAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Doordash Amount">Doordash Amount <span class="sort-indicator" id="sort-doordashAmount"></span></th>
@@ -115,7 +116,7 @@
           <th onclick="sortTable('onlineAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Online Amount">Online Amount <span class="sort-indicator" id="sort-onlineAmount"></span></th>
           <th onclick="sortTable('storeName')" style="cursor:pointer;background:var(--table-head);" title="Sort by Store Name">Store Name <span class="sort-indicator" id="sort-storeName"></span></th>
           <th onclick="sortTable('expenseAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Expense Amount">Expense Amount <span class="sort-indicator" id="sort-expenseAmount"></span></th>
-          <th onclick="sortTable('totalAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Sale Amount">Sale Amount <span class="sort-indicator" id="sort-totalAmount"></span></th>
+          <th onclick="sortTable('totalAmount')" style="cursor:pointer;background:var(--table-head);" title="Sort by Calculated Sale Amount">Calculated Sale Amount <span class="sort-indicator" id="sort-totalAmount"></span></th>
           <th style="background:var(--table-head);font-weight:bold;color:#374151;">Actions</th>
         </tr>
       </thead>
@@ -123,6 +124,7 @@
       <tfoot>
         <tr class="footer-total-row" style="background:var(--table-head);font-weight:600;">
           <td>Totals</td>
+          <td id="footer-capturedSaleAmount"></td>
           <td id="footer-cashAmount"></td>
           <td id="footer-visaAmount"></td>
           <td id="footer-doordashAmount"></td>

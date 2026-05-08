@@ -670,7 +670,7 @@ function renderSupplierTable() {
     }
     tbody.innerHTML += `<tr${highlight}>
       <td>${row.supplierName}</td>
-      <td>${row.transactionDate}</td>
+      <td>${row.transactionDate ? row.transactionDate : ''}</td>
       <td>${row.invoiceNumber}</td>
       <td>${row.checkNumber}</td>
       <td>$${Number(row.invoiceAmount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
