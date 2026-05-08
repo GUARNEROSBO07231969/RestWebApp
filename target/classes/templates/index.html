@@ -57,36 +57,43 @@
 
     <h3 style="font-size:1em;">Add / Edit Transaction</h3>
     <div class="form-grid modern-inputs single-row-form">
-      <div class="input-group"><span class="input-icon">💵</span><input id="cashAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Cash Amount</label></div>
-      <div class="input-group"><span class="input-icon">💳</span><input id="visaAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Visa Amount</label></div>
-      <div class="input-group"><span class="input-icon">🍔</span><input id="doordashAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Doordash Amount</label></div>
-      <div class="input-group"><span class="input-icon">🍟</span><input id="grubhubAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Grubhub Amount</label></div>
-      <div class="input-group"><span class="input-icon">🚗</span><input id="ubereatsAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>UberEats Amount</label></div>
-      <div class="input-group"><span class="input-icon">🌐</span><input id="onlineAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Online Amount</label></div>
+      <div class="input-group"><span class="input-icon">💵</span><input id="cashAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Cash Amount</label></div>
+      <div class="input-group"><span class="input-icon">💳</span><input id="visaAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Visa Amount</label></div>
+      <div class="input-group"><span class="input-icon">🍔</span><input id="doordashAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Doordash Amount</label></div>
+      <div class="input-group"><span class="input-icon">🍟</span><input id="grubhubAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Grubhub Amount</label></div>
+      <div class="input-group"><span class="input-icon">🚗</span><input id="ubereatsAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>UberEats Amount</label></div>
+      <div class="input-group"><span class="input-icon">🌐</span><input id="onlineAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Online Amount</label></div>
       <div class="input-group"><span class="input-icon">🏬</span><input id="storeName" placeholder=" "><label>Store Name</label></div>
-      <div class="input-group"><span class="input-icon">💸</span><input id="expenseAmount" type="number" step="0.01" min="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Expense Amount</label></div>
-      <div class="input-group readonly"><span class="input-icon">📊</span><input id="calcTotal" readonly placeholder=" "><label>Sale Amount</label></div>
+      <div class="input-group"><span class="input-icon">💸</span><input id="expenseAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Expense Amount</label></div>
+      <div class="input-group readonly"><span class="input-icon">📊</span><input id="calcTotal" readonly placeholder=" "><label>Calculated Sales Amount</label></div>
       <div class="btn-row" style="align-self:end;display:flex;gap:8px;margin-left:8px;">
         <button class="btn btn-primary" onclick="saveTx()">💾 Save</button>
         <button class="btn btn-secondary" onclick="cancelEdit()">✖ Cancel</button>
       </div>
     </div>
 
-    <div class="date-range-filter" style="display:flex;flex-direction:row;align-items:center;justify-content:flex-start;margin-bottom:8px;gap:10px;">
-      <label for="dateFrom" style="font-size:0.95em;font-weight:600;margin-bottom:0;">From</label>
-      <input id="dateFrom" type="date" style="width:120px;padding:4px 8px;font-size:0.95em;border-radius:6px;border:1px solid #cbd5e1;" onchange="filterTable()" placeholder="MM/DD/YYYY">
-      <label for="dateTo" style="font-size:0.95em;font-weight:600;margin-bottom:0;">To</label>
-      <input id="dateTo" type="date" style="width:120px;padding:4px 8px;font-size:0.95em;border-radius:6px;border:1px solid #cbd5e1;" onchange="filterTable()" placeholder="MM/DD/YYYY">
-      <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('today')">Today</button>
-      <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('week')">This Week</button>
-      <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('month')">This Month</button>
-      <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('year')">This Year</button>
-    </div>
-
-    <div class="search-row" style="margin-bottom:4px;display:flex;align-items:center;gap:8px">
-      <input id="tableSearch" type="text" placeholder="🔍 Search table..." style="flex:1;max-width:260px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;font-size:13px;" oninput="filterTable()">
-      <button class="btn btn-secondary" onclick="printPDF()">🖨️ Print PDF</button>
-      <button class="btn btn-secondary" onclick="printExcel()">📥 Print Excel</button>
+    <!-- Combined Search and Date Filter Row (Print buttons right-aligned) -->
+    <div class="filter-search-row" style="display:flex;align-items:center;gap:0;margin-bottom:8px;flex-wrap:wrap;">
+      <div class="search-row" style="display:flex;align-items:center;gap:0;margin-bottom:0;flex:1;">
+        <input id="tableSearch" type="text" placeholder="🔍 Search table..." style="flex:1;max-width:260px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;font-size:13px;" oninput="filterTable()">
+        <div class="date-range-filter" style="display:flex;flex-direction:row;align-items:center;gap:10px;margin-bottom:0;margin-right:24px;">
+          <div class="date-filter-title" style="font-size:1.08em;font-weight:600;color:#2563eb;margin-right:18px;white-space:nowrap;letter-spacing:0.01em;display:flex;align-items:center;">
+            <span style="display:inline-block;padding:4px 12px;background:#e0f2fe;border-radius:8px 8px 8px 8px;box-shadow:0 2px 8px #2563eb11;font-family:'Segoe UI','Inter',Arial,sans-serif;">Filter Sales by Date Range</span>
+          </div>
+          <label for="dateFrom" style="font-size:0.95em;font-weight:600;margin-bottom:0;">From</label>
+          <input id="dateFrom" type="date" style="width:120px;padding:4px 8px;font-size:0.95em;border-radius:6px;border:1px solid #cbd5e1;" onchange="filterTable()" placeholder="MM/DD/YYYY">
+          <label for="dateTo" style="font-size:0.95em;font-weight:600;margin-bottom:0;">To</label>
+          <input id="dateTo" type="date" style="width:120px;padding:4px 8px;font-size:0.95em;border-radius:6px;border:1px solid #cbd5e1;" onchange="filterTable()" placeholder="MM/DD/YYYY">
+          <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('today')">Today</button>
+          <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('week')">This Week</button>
+          <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('month')">This Month</button>
+          <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setDateRange('year')">This Year</button>
+        </div>
+      </div>
+      <div class="print-btns" style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+        <button class="btn btn-secondary" onclick="printPDF()">🖨️ Print PDF</button>
+        <button class="btn btn-secondary" onclick="printExcel()">📥 Print Excel</button>
+      </div>
     </div>
 
     <table class="modern sales-table" id="salesTable">
@@ -193,6 +200,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const dd = String(today.getDate()).padStart(2, '0');
     dateInput.value = `${yyyy}-${mm}-${dd}`;
   }
+
+  // Numeric input auto-clear 0 on focus, restore 0 on blur if empty
+  const numericInputs = [
+    'cashAmount',
+    'visaAmount',
+    'doordashAmount',
+    'grubhubAmount',
+    'ubereatsAmount',
+    'onlineAmount',
+    'expenseAmount'
+  ];
+  numericInputs.forEach(function(id) {
+    const input = document.getElementById(id);
+    if (input) {
+      input.addEventListener('focus', function() {
+        if (this.value === '0') {
+          this.value = '';
+        }
+      });
+      input.addEventListener('blur', function() {
+        if (this.value === '' || this.value === null) {
+          this.value = '0';
+        }
+      });
+    }
+  });
 });
 // Also set default date when clearing the supplier form
 function clearSupplierForm() {
