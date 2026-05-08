@@ -3,7 +3,30 @@ const expenseAmount = document.getElementById('expenseAmount');
 function fmt(v){return '$'+Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function recalcTotal(){
   const c=+cashAmount.value||0, v=+visaAmount.value||0, d=+doordashAmount.value||0, g=+grubhubAmount.value||0, u=+ubereatsAmount.value||0, o=+onlineAmount.value||0, s=+expenseAmount.value||0;
-  calcTotal.value=fmt(c+v+d+g+u+o+s);
+  const calc = c+v+d+g+u+o+s;
+  calcTotal.value=fmt(calc);
+  // Color logic for calculated vs captured
+  const captured = +(document.getElementById('capturedSaleAmount')?.value||0);
+  const input = document.getElementById('calcTotal');
+  const label = input?.parentElement?.querySelector('label');
+  if (input && label) {
+    if (calc < captured) {
+      input.style.borderColor = '#dc2626';
+      input.style.boxShadow = '0 0 0 2px #dc262655';
+      input.style.color = '#dc2626';
+      label.style.color = '#dc2626';
+    } else if (calc > captured) {
+      input.style.borderColor = '#22c55e';
+      input.style.boxShadow = '0 0 0 2px #22c55e55';
+      input.style.color = '#22c55e';
+      label.style.color = '#22c55e';
+    } else {
+      input.style.borderColor = '';
+      input.style.boxShadow = '';
+      input.style.color = '';
+      label.style.color = '';
+    }
+  }
 }
  
 // Center color plugin: fill center of pie with Total KPI color
@@ -1203,3 +1226,22 @@ function switchTab(tab) {
 // document.getElementById('supplier-grand-total').textContent = grandTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 //
 // Make sure this code runs every time the table is rendered, and uses the full filteredSupplierData array.
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Attach recalcTotal to all relevant inputs
+  [
+    'capturedSaleAmount',
+    'cashAmount',
+    'visaAmount',
+    'doordashAmount',
+    'grubhubAmount',
+    'ubereatsAmount',
+    'onlineAmount',
+    'expenseAmount'
+  ].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', recalcTotal);
+    }
+  });
+});
