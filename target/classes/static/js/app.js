@@ -318,6 +318,7 @@ async function saveTx() {
   const grubhubAmount = document.getElementById('grubhubAmount');
   const ubereatsAmount = document.getElementById('ubereatsAmount');
   const onlineAmount = document.getElementById('onlineAmount');
+  const capturedSaleAmountInput = document.getElementById('capturedSaleAmount'); // NEW
   const c = +cashAmount.value||0, v = +visaAmount.value||0, d = +doordashAmount.value||0, g = +grubhubAmount.value||0, u = +ubereatsAmount.value||0, o = +onlineAmount.value||0, s = +expenseAmountInput.value||0;
   const netsaleAmount = c + v + d + g + u + o - s;
   const body={
@@ -332,7 +333,8 @@ async function saveTx() {
     ubereatsAmount: u,
     onlineAmount: o,
     // Use Eastern Time for the date
-    date: getEasternIsoString()
+    date: getEasternIsoString(),
+    capturedSaleAmount: capturedSaleAmountInput ? +capturedSaleAmountInput.value : 0 // NEW
   };
   let wasEdit = !!editId;
   if(editId){
@@ -346,7 +348,7 @@ async function saveTx() {
   // Clear all input values after saving
   const ids = [
     'cashAmount', 'visaAmount', 'doordashAmount', 'grubhubAmount', 'ubereatsAmount', 'onlineAmount',
-    'storeName', 'expenseAmount', 'calcTotal'
+    'storeName', 'expenseAmount', 'calcTotal', 'capturedSaleAmount' // NEW
   ];
   ids.forEach(id => {
     const el = document.getElementById(id);

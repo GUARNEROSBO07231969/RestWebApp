@@ -71,4 +71,10 @@ public class Sale {
     public void setUbereatsAmount(Double ubereatsAmount) { this.ubereatsAmount = ubereatsAmount; }
     public Double getOnlineAmount() { return onlineAmount; }
     public void setOnlineAmount(Double onlineAmount) { this.onlineAmount = onlineAmount; }
+
+    @Column(name = "captured_sale_amount")
+    public Double capturedSaleAmount;
+
+    public Double getCapturedSaleAmount() { return capturedSaleAmount; }
+    public void setCapturedSaleAmount(Double capturedSaleAmount) { this.capturedSaleAmount = capturedSaleAmount; }
 }

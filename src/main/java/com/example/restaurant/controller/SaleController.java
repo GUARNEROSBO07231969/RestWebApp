@@ -45,6 +45,7 @@ public class SaleController {
         o.grubhubAmount = b.get("grubhubAmount") != null ? ((Number) b.get("grubhubAmount")).doubleValue() : 0;
         o.ubereatsAmount = b.get("ubereatsAmount") != null ? ((Number) b.get("ubereatsAmount")).doubleValue() : 0;
         o.onlineAmount = b.get("onlineAmount") != null ? ((Number) b.get("onlineAmount")).doubleValue() : 0;
+        o.capturedSaleAmount = b.get("capturedSaleAmount") != null ? ((Number) b.get("capturedSaleAmount")).doubleValue() : 0;
         // Set date with full precision if provided, otherwise use now
         if (b.get("date") != null) {
             if (b.get("date") instanceof String) {
@@ -71,6 +72,7 @@ public class SaleController {
         if (b.containsKey("grubhubAmount")) o.grubhubAmount = b.get("grubhubAmount") != null ? ((Number) b.get("grubhubAmount")).doubleValue() : 0;
         if (b.containsKey("ubereatsAmount")) o.ubereatsAmount = b.get("ubereatsAmount") != null ? ((Number) b.get("ubereatsAmount")).doubleValue() : 0;
         if (b.containsKey("onlineAmount")) o.onlineAmount = b.get("onlineAmount") != null ? ((Number) b.get("onlineAmount")).doubleValue() : 0;
+        if (b.containsKey("capturedSaleAmount")) o.capturedSaleAmount = b.get("capturedSaleAmount") != null ? ((Number) b.get("capturedSaleAmount")).doubleValue() : 0;
         return s.save(o);
     }
 

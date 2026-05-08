@@ -57,6 +57,7 @@
 
     <h3 style="font-size:1em;">Add / Edit Transaction</h3>
     <div class="form-grid modern-inputs single-row-form">
+      <div class="input-group"><span class="input-icon">📝</span><input id="capturedSaleAmount" name="capturedSaleAmount" type="number" step="0.01" min="0" value="0" placeholder=" "><label>Captured Sale Amount</label></div>
       <div class="input-group"><span class="input-icon">💵</span><input id="cashAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Cash Amount</label></div>
       <div class="input-group"><span class="input-icon">💳</span><input id="visaAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Visa Amount</label></div>
       <div class="input-group"><span class="input-icon">🍔</span><input id="doordashAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Doordash Amount</label></div>
@@ -65,10 +66,16 @@
       <div class="input-group"><span class="input-icon">🌐</span><input id="onlineAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Online Amount</label></div>
       <div class="input-group"><span class="input-icon">🏬</span><input id="storeName" placeholder=" "><label>Store Name</label></div>
       <div class="input-group"><span class="input-icon">💸</span><input id="expenseAmount" type="number" step="0.01" min="0" value="0" placeholder=" " oninput="recalcTotal()" inputmode="decimal" pattern="[0-9]*"><label>Expense Amount</label></div>
-      <div class="input-group readonly"><span class="input-icon">📊</span><input id="calcTotal" readonly placeholder=" "><label>Calculated Sales Amount</label></div>
       <div class="btn-row" style="align-self:end;display:flex;gap:8px;margin-left:8px;">
         <button class="btn btn-primary" onclick="saveTx()">💾 Save</button>
         <button class="btn btn-secondary" onclick="cancelEdit()">✖ Cancel</button>
+      </div>
+    </div>
+    <div class="form-grid modern-inputs single-row-form" style="margin-top:0;grid-template-columns:1fr;">
+      <div class="input-group readonly" style="min-width:180px;max-width:220px;width:100%;">
+        <span class="input-icon">📊</span>
+        <input id="calcTotal" readonly placeholder=" " style="min-width:120px;max-width:180px;width:100%;font-weight:bold;font-size:1.08em;background-clip:padding-box;color:#1e293b;text-align:left;padding-right:18px;">
+        <label>Calculated Sales Amount</label>
       </div>
     </div>
 
@@ -209,7 +216,8 @@ document.addEventListener('DOMContentLoaded', function() {
     'grubhubAmount',
     'ubereatsAmount',
     'onlineAmount',
-    'expenseAmount'
+    'expenseAmount',
+    'capturedSaleAmount'
   ];
   numericInputs.forEach(function(id) {
     const input = document.getElementById(id);
@@ -226,6 +234,66 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
+
+  // Dynamic font color for Calculated Sales Amount
+  function updateCalcTotalFontColor() {
+    const calcInput = document.getElementById('calcTotal');
+    const capturedInput = document.getElementById('capturedSaleAmount');
+    if (!calcInput || !capturedInput) return;
+    const calcVal = parseFloat(calcInput.value);
+    const capturedVal = parseFloat(capturedInput.value);
+    const calcIsNum = !isNaN(calcVal);
+    const capturedIsNum = !isNaN(capturedVal);
+    if ((!calcIsNum && !capturedIsNum) || (calcVal === 0 && capturedVal === 0)) {
+      calcInput.style.color = '#1e293b'; // black/default
+    } else if (calcIsNum && capturedIsNum && calcVal < capturedVal) {
+      calcInput.style.color = '#dc2626'; // red-600
+    } else if (calcIsNum && capturedIsNum && calcVal > capturedVal) {
+      calcInput.style.color = '#16a34a'; // green-600
+    } else {
+      calcInput.style.color = '#1e293b'; // black/default
+    }
+  }
+  // Listen for more events to catch programmatic changes
+  const calcTotalInput = document.getElementById('calcTotal');
+  const capturedSaleInput = document.getElementById('capturedSaleAmount');
+  ['input','change','keyup'].forEach(function(evt) {
+    calcTotalInput.addEventListener(evt, updateCalcTotalFontColor);
+    capturedSaleInput.addEventListener(evt, updateCalcTotalFontColor);
+  });
+  // IMPORTANT: MutationObserver does NOT work for input.value changes.
+  // You MUST call updateCalcTotalFontColor() immediately after setting calcTotal.value in your code.
+  // Example:
+  //   document.getElementById('calcTotal').value = someValue;
+  //   updateCalcTotalFontColor();
+  // Expose globally so it can be called after recalcTotal()
+  window.updateCalcTotalFontColor = updateCalcTotalFontColor;
+  updateCalcTotalFontColor();
+
+  // Patch recalcTotal to always update font color after setting calcTotal.value
+  if (typeof recalcTotal === 'function') {
+    const origRecalcTotal = recalcTotal;
+    window.recalcTotal = function() {
+      origRecalcTotal.apply(this, arguments);
+      updateCalcTotalFontColor();
+    };
+  } else {
+    // If recalcTotal is defined later, patch it then
+    const origDefineProperty = Object.defineProperty;
+    Object.defineProperty(window, 'recalcTotal', {
+      configurable: true,
+      set: function(fn) {
+        origDefineProperty.call(Object, window, 'recalcTotal', {
+          value: function() {
+            fn.apply(this, arguments);
+            updateCalcTotalFontColor();
+          },
+          writable: true,
+          configurable: true
+        });
+      }
+    });
+  }
 });
 // Also set default date when clearing the supplier form
 function clearSupplierForm() {
