@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-theme="light">
+<html>
 <head>
   <meta charset="UTF-8">
   <title>Login</title>
@@ -133,12 +133,23 @@
       margin-bottom: 0;
       text-align: center;
     }
+    .login-form-container {
+      background: rgba(255,255,255,0.92);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      padding: 32px 28px 24px 28px;
+      max-width: 400px;
+      margin: 60px auto;
+    }
   </style>
 </head>
 <body>
-  <div class="login-container">
+  <div class="login-form-container">
     <div class="login-logo">
       <span>🔒</span>
+    </div>
+    <div style="text-align:center;margin-bottom:24px;">
+      <img src="/static/images/donramon.png" alt="Don Ramon Logo" style="max-width:180px;width:100%;height:auto;display:inline-block;" />
     </div>
     <div class="login-title">Sign In</div>
     <form class="login-form" method="post" action="/login" autocomplete="on" style="gap: 28px;">

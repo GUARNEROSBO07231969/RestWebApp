@@ -257,9 +257,13 @@ function renderTable() {
     const saleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
     const netSaleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
     // Use a modern light yellow gradient highlight for editing row
-    const highlight = (editId === x.id)
-      ? ' style="background:linear-gradient(90deg,#fef9c3 80%,#fde047 100%)!important;color:#92400e!important;border:2.5px solid #fde047!important;box-shadow:0 4px 18px 0 #fde04755,0 1.5px 6px 0 #fde04733;outline:2px solid #fde047;outline-offset:-2px;font-weight:600;position:relative;overflow:hidden;transition:background 0.3s,color 0.2s,box-shadow 0.3s;animation:rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;"'
-      : '';
+    let highlight = '';
+    if (editId === x.id) {
+      highlight = ' style="background:linear-gradient(90deg,#fef9c3 80%,#fde047 100%)!important;color:#92400e!important;border:2.5px solid #fde047!important;box-shadow:0 4px 18px 0 #fde04755,0 1.5px 6px 0 #fde04733;outline:2px solid #fde047;outline-offset:-2px;font-weight:600;position:relative;overflow:hidden;transition:background 0.3s,color 0.2s,box-shadow 0.3s;animation:rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;"';
+    } else if ((saleAmount <= (x.capturedSaleAmount||0) - 200)) {
+      // Highlight if calculated sale amount is less than captured by $200 or more
+      highlight = ' style="background:#fef2f2 !important;color:#b91c1c !important;border:2.5px solid #dc2626 !important;box-shadow:0 0 0 2px #dc262655 !important;font-weight:600;transition:background 0.3s,color 0.2s,box-shadow 0.3s;"';
+    }
     rows.innerHTML+=`<tr${highlight}>
       <td>${x.date ? x.date.substring(0,10) : ''}</td>
       <td>${fmt(x.capturedSaleAmount||0)}</td>
