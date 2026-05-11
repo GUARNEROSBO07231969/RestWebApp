@@ -11,19 +11,25 @@ function recalcTotal(){
   const label = input?.parentElement?.querySelector('label');
   if (input && label) {
     if (calc < captured) {
+      input.style.background = '#fef2f2'; // light red background
       input.style.borderColor = '#dc2626';
       input.style.boxShadow = '0 0 0 2px #dc262655';
-      input.style.color = '#dc2626';
+      input.style.color = '#b91c1c';
+      input.style.fontWeight = 'bold';
       label.style.color = '#dc2626';
     } else if (calc > captured) {
+      input.style.background = '#f0fdf4'; // light green background
       input.style.borderColor = '#22c55e';
       input.style.boxShadow = '0 0 0 2px #22c55e55';
-      input.style.color = '#22c55e';
+      input.style.color = '#15803d';
+      input.style.fontWeight = 'bold';
       label.style.color = '#22c55e';
     } else {
+      input.style.background = '';
       input.style.borderColor = '';
       input.style.boxShadow = '';
       input.style.color = '';
+      input.style.fontWeight = '';
       label.style.color = '';
     }
   }
@@ -266,7 +272,7 @@ function renderTable() {
       <td>${x.storeName??''}</td>
       <td>${fmt(x.expenseAmount||0)}</td>
       <td>${fmt(saleAmount)}</td>
-      <td><button class="action-btn edit-btn" onclick="editTx(${x.id},${netSaleAmount},${x.cashAmount},${x.visaAmount},${x.doordashAmount||0},${x.grubhubAmount||0},${x.ubereatsAmount||0},${x.onlineAmount||0},'${x.storeName??''}',${x.expenseAmount||0},${x.capturedSaleAmount||0})">Edit</button> <button class="action-btn delete-btn" onclick="delTx(${x.id})">Delete</button></td>
+      <td><button class="action-btn edit-btn" onclick="editTx(${x.id},${netSaleAmount},${x.cashAmount},${x.visaAmount},${x.doordashAmount||0},${x.grubhubAmount||0},${x.ubereatsAmount||0},${x.onlineAmount||0},'${x.storeName??''}',${x.expenseAmount||0},${x.capturedSaleAmount||0},'${x.date ? x.date.substring(0,10) : ''}')">Edit</button> <button class="action-btn delete-btn" onclick="delTx(${x.id})">Delete</button></td>
     </tr>`
   });
   // Update footer totals
@@ -310,7 +316,7 @@ function gotoPage(page) {
   renderTable();
 }
 
-function editTx(id, net, c, v, doordash, grubhub, ubereats, online, store, s, capturedSaleAmount) {
+function editTx(id, net, c, v, doordash, grubhub, ubereats, online, store, s, capturedSaleAmount, date) {
   editId = id;
   sortColumn = null; // Disable sorting when editing
   renderTable();
@@ -323,6 +329,11 @@ function editTx(id, net, c, v, doordash, grubhub, ubereats, online, store, s, ca
   document.getElementById('storeName').value = store != null ? store : '';
   document.getElementById('expenseAmount').value = s != null ? String(s) : '';
   document.getElementById('capturedSaleAmount').value = capturedSaleAmount != null ? String(capturedSaleAmount) : '0';
+  // Set sale date picker value
+  var saleDateInput = document.getElementById('saleDate');
+  if (saleDateInput) {
+    saleDateInput.value = (date && date.length >= 10) ? date.substring(0,10) : '';
+  }
   recalcTotal();
 }
 function cancelEdit(){
@@ -345,9 +356,18 @@ async function saveTx() {
   const grubhubAmount = document.getElementById('grubhubAmount');
   const ubereatsAmount = document.getElementById('ubereatsAmount');
   const onlineAmount = document.getElementById('onlineAmount');
-  const capturedSaleAmountInput = document.getElementById('capturedSaleAmount'); // NEW
+  const capturedSaleAmountInput = document.getElementById('capturedSaleAmount');
+  const saleDateInput = document.getElementById('saleDate');
   const c = +cashAmount.value||0, v = +visaAmount.value||0, d = +doordashAmount.value||0, g = +grubhubAmount.value||0, u = +ubereatsAmount.value||0, o = +onlineAmount.value||0, s = +expenseAmountInput.value||0;
   const netsaleAmount = c + v + d + g + u + o - s;
+  // Use selected date if set, else fallback to getEasternIsoString()
+  let saleDateStr = '';
+  if (saleDateInput && saleDateInput.value) {
+    // Compose ISO string with 00:00:00 time
+    saleDateStr = saleDateInput.value + 'T00:00:00';
+  } else {
+    saleDateStr = getEasternIsoString();
+  }
   const body={
     restaurantId:+restaurantSelect.value,
     cashAmount:c,
@@ -359,23 +379,22 @@ async function saveTx() {
     grubhubAmount: g,
     ubereatsAmount: u,
     onlineAmount: o,
-    // Use Eastern Time for the date
-    date: getEasternIsoString(),
-    capturedSaleAmount: capturedSaleAmountInput ? +capturedSaleAmountInput.value : 0 // NEW
+    date: saleDateStr,
+    capturedSaleAmount: capturedSaleAmountInput ? +capturedSaleAmountInput.value : 0
   };
   let wasEdit = !!editId;
   if(editId){
     await fetch('/api/sales/'+editId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   }else{
     await fetch('/api/sales',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    currentPage = 1; // Only reset to page 1 for new transactions
+    currentPage = 1;
   }
-  editId = null; // Clear edit state after saving
+  editId = null;
   await loadData(wasEdit);
   // Clear all input values after saving
   const ids = [
     'cashAmount', 'visaAmount', 'doordashAmount', 'grubhubAmount', 'ubereatsAmount', 'onlineAmount',
-    'storeName', 'expenseAmount', 'calcTotal', 'capturedSaleAmount' // NEW
+    'storeName', 'expenseAmount', 'calcTotal', 'capturedSaleAmount', 'saleDate'
   ];
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -578,6 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Filter and search logic
 function getFilteredData() {
   let data = allData;
   if (dateFrom || dateTo) {
@@ -1245,3 +1265,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+
+// Add sale date picker after calculated sale amount input
+if (typeof window !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', function() {
+    // Only add if not already present
+    if (!document.getElementById('saleDate')) {
+      var calcTotalInput = document.getElementById('calcTotal');
+      if (calcTotalInput && calcTotalInput.parentElement) {
+        var dateDiv = document.createElement('div');
+        dateDiv.style.margin = '8px 0 0 0';
+        dateDiv.innerHTML = '<label for="saleDate" style="font-size:13px;font-weight:500;margin-right:7px;">Sale Date:</label>' +
+          '<input type="date" id="saleDate" name="saleDate" style="padding:4px 10px;font-size:14px;border-radius:6px;border:1px solid #ccc;min-width:140px;max-width:180px;">';
+        calcTotalInput.parentElement.parentElement.insertBefore(dateDiv, calcTotalInput.parentElement.nextSibling);
+      }
+    }
+  });
+}
