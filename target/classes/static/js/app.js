@@ -259,10 +259,10 @@ function renderTable() {
     // Use a modern light yellow gradient highlight for editing row
     let highlight = '';
     if (editId === x.id) {
-      highlight = ' style="background:linear-gradient(90deg,#fef9c3 80%,#fde047 100%)!important;color:#92400e!important;border:2.5px solid #fde047!important;box-shadow:0 4px 18px 0 #fde04755,0 1.5px 6px 0 #fde04733;outline:2px solid #fde047;outline-offset:-2px;font-weight:600;position:relative;overflow:hidden;transition:background 0.3s,color 0.2s,box-shadow 0.3s;animation:rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;"';
+      highlight = ' style="background:linear-gradient(90deg,#fef9c3 80%,#fde047 100%)!important;color:#92400e!important;border:2.5px solid #fde047!important;box-shadow:0 4px 18px 0 #fde04755,0 1.5px 6px 0 #fde04733;outline:2px solid #fde047;outline-offset:-2px;font-weight:600;position:relative;overflow:hidden;transition:background 0.3s,color 0.2s,box-shadow 0.3s;animation:rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;z-index:1;"';
     } else if ((saleAmount <= (x.capturedSaleAmount||0) - 200)) {
       // Highlight if calculated sale amount is less than captured by $200 or more
-      highlight = ' style="background:#fef2f2 !important;color:#b91c1c !important;border:2.5px solid #dc2626 !important;box-shadow:0 0 0 2px #dc262655 !important;font-weight:600;transition:background 0.3s,color 0.2s,box-shadow 0.3s;"';
+      highlight = ' style="background:rgba(254,242,242,0.92)!important;color:#b91c1c !important;border:2.5px solid #dc2626 !important;box-shadow:0 0 0 2px #dc262655 !important;font-weight:600;transition:background 0.3s,color 0.2s,box-shadow 0.3s;z-index:1;position:relative;"';
     }
     rows.innerHTML+=`<tr${highlight}>
       <td>${x.date ? x.date.substring(0,10) : ''}</td>
@@ -336,7 +336,12 @@ function editTx(id, net, c, v, doordash, grubhub, ubereats, online, store, s, ca
   // Set sale date picker value
   var saleDateInput = document.getElementById('saleDate');
   if (saleDateInput) {
+    // Always set the value to the date passed in (yyyy-mm-dd)
     saleDateInput.value = (date && date.length >= 10) ? date.substring(0,10) : '';
+  }
+  // Store the original date in a data attribute for fallback
+  if (saleDateInput) {
+    saleDateInput.setAttribute('data-original-date', date || '');
   }
   recalcTotal();
 }
@@ -367,11 +372,18 @@ async function saveTx() {
   // Use selected date if set, else fallback to getEasternIsoString()
   let saleDateStr = '';
   if (saleDateInput && saleDateInput.value) {
-    // Compose ISO string with 00:00:00 time
+    // Always use the current input value if present (even if editing)
     saleDateStr = saleDateInput.value + 'T00:00:00';
+  } else if (saleDateInput && saleDateInput.getAttribute('data-original-date')) {
+    // Only fallback if input is missing or empty
+    let orig = saleDateInput.getAttribute('data-original-date');
+    saleDateStr = (orig && orig.length >= 10) ? orig.substring(0,10) + 'T00:00:00' : getEasternIsoString();
   } else {
     saleDateStr = getEasternIsoString();
   }
+  // Debug: print date input and final date string
+  console.log('saleDateInput.value:', saleDateInput ? saleDateInput.value : '(no input)');
+  console.log('saleDateStr to be saved:', saleDateStr);
   const body={
     restaurantId:+restaurantSelect.value,
     cashAmount:c,
@@ -386,6 +398,7 @@ async function saveTx() {
     date: saleDateStr,
     capturedSaleAmount: capturedSaleAmountInput ? +capturedSaleAmountInput.value : 0
   };
+  console.log('Request body to be sent:', body);
   let wasEdit = !!editId;
   if(editId){
     await fetch('/api/sales/'+editId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -404,6 +417,7 @@ async function saveTx() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  recalcTotal();
 }
 async function delTx(id){await fetch('/api/sales/'+id,{method:'DELETE'});await loadData();}
 
