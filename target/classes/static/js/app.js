@@ -257,9 +257,13 @@ function renderTable() {
     const saleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
     const netSaleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
     // Use a modern light yellow gradient highlight for editing row
-    const highlight = (editId === x.id)
-      ? ' style="background:linear-gradient(90deg,#fef9c3 80%,#fde047 100%)!important;color:#92400e!important;border:2.5px solid #fde047!important;box-shadow:0 4px 18px 0 #fde04755,0 1.5px 6px 0 #fde04733;outline:2px solid #fde047;outline-offset:-2px;font-weight:600;position:relative;overflow:hidden;transition:background 0.3s,color 0.2s,box-shadow 0.3s;animation:rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;"'
-      : '';
+    let highlight = '';
+    if (editId === x.id) {
+      highlight = ' style="background:linear-gradient(90deg,#fef9c3 80%,#fde047 100%)!important;color:#92400e!important;border:2.5px solid #fde047!important;box-shadow:0 4px 18px 0 #fde04755,0 1.5px 6px 0 #fde04733;outline:2px solid #fde047;outline-offset:-2px;font-weight:600;position:relative;overflow:hidden;transition:background 0.3s,color 0.2s,box-shadow 0.3s;animation:rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;"';
+    } else if ((saleAmount <= (x.capturedSaleAmount||0) - 200)) {
+      // Highlight if calculated sale amount is less than captured by $200 or more
+      highlight = ' style="background:#fef2f2 !important;color:#b91c1c !important;border:2.5px solid #dc2626 !important;box-shadow:0 0 0 2px #dc262655 !important;font-weight:600;transition:background 0.3s,color 0.2s,box-shadow 0.3s;"';
+    }
     rows.innerHTML+=`<tr${highlight}>
       <td>${x.date ? x.date.substring(0,10) : ''}</td>
       <td>${fmt(x.capturedSaleAmount||0)}</td>
@@ -898,10 +902,12 @@ function renderSupplierKpiAndGraphs(filteredData) {
     .slice(0, 5); // Show only top 5 suppliers
   const heatMapLabels = sortedSuppliers.map(([name]) => name);
   const heatMapData = sortedSuppliers.map(([, value]) => value);
+  const heatMapElem = document.getElementById('supplierHeatMap');
+  if (!heatMapElem) return; // Prevent error if element is missing
   if (window.supplierHeatMapChart) {
     window.supplierHeatMapChart.destroy();
   }
-  const ctx = document.getElementById('supplierHeatMap').getContext ? document.getElementById('supplierHeatMap').getContext('2d') : null;
+  const ctx = heatMapElem.getContext ? heatMapElem.getContext('2d') : null;
   if (ctx && heatMapLabels.length > 0) {
     window.supplierHeatMapChart = new Chart(ctx, {
       type: 'bar',
@@ -976,8 +982,8 @@ function renderSupplierKpiAndGraphs(filteredData) {
       },
       plugins: [window.ChartDataLabels]
     });
-  } else if (document.getElementById('supplierHeatMap')) {
-    document.getElementById('supplierHeatMap').innerHTML = '<div style="color:#888;text-align:center;padding-top:40px;">No data</div>';
+  } else if (heatMapElem) {
+    heatMapElem.innerHTML = '<div style="color:#888;text-align:center;padding-top:40px;">No data</div>';
   }
 }
 
@@ -1275,10 +1281,36 @@ if (typeof window !== 'undefined') {
       if (calcTotalInput && calcTotalInput.parentElement) {
         var dateDiv = document.createElement('div');
         dateDiv.style.margin = '8px 0 0 0';
-        dateDiv.innerHTML = '<label for="saleDate" style="font-size:13px;font-weight:500;margin-right:7px;">Sale Date:</label>' +
-          '<input type="date" id="saleDate" name="saleDate" style="padding:4px 10px;font-size:14px;border-radius:6px;border:1px solid #ccc;min-width:140px;max-width:180px;">';
+        // Nest input inside label for accessibility
+        dateDiv.innerHTML = '<label style="font-size:13px;font-weight:500;margin-right:7px;">Sale Date: <input type="date" id="saleDate" name="saleDate" style="padding:4px 10px;font-size:14px;border-radius:6px;border:1px solid #ccc;min-width:140px;max-width:180px;"></label>';
         calcTotalInput.parentElement.parentElement.insertBefore(dateDiv, calcTotalInput.parentElement.nextSibling);
       }
     }
   });
 }
+
+// Accessibility fix: ensure all labels are associated with their inputs
+document.addEventListener('DOMContentLoaded', function() {
+  const ids = [
+    'cashAmount', 'visaAmount', 'doordashAmount', 'grubhubAmount', 'ubereatsAmount', 'onlineAmount', 'expenseAmount', 'capturedSaleAmount', 'calcTotal',
+    // Supplier form fields
+    'supplierName', 'transactionDate', 'invoiceNumber', 'checkNumber', 'invoiceAmount', 'notes',
+    // Store name field
+    'storeName'
+  ];
+  ids.forEach(function(id) {
+    const input = document.getElementById(id);
+    if (input) {
+      // Try to find a label in the same parent
+      let label = input.parentElement && input.parentElement.querySelector('label');
+      // If not found, try previous sibling
+      if (!label && input.previousElementSibling && input.previousElementSibling.tagName === 'LABEL') {
+        label = input.previousElementSibling;
+      }
+      // If found, set for attribute
+      if (label) {
+        label.setAttribute('for', id);
+      }
+    }
+  });
+});
