@@ -336,7 +336,12 @@ function editTx(id, net, c, v, doordash, grubhub, ubereats, online, store, s, ca
   // Set sale date picker value
   var saleDateInput = document.getElementById('saleDate');
   if (saleDateInput) {
+    // Always set the value to the date passed in (yyyy-mm-dd)
     saleDateInput.value = (date && date.length >= 10) ? date.substring(0,10) : '';
+  }
+  // Store the original date in a data attribute for fallback
+  if (saleDateInput) {
+    saleDateInput.setAttribute('data-original-date', date || '');
   }
   recalcTotal();
 }
@@ -367,11 +372,18 @@ async function saveTx() {
   // Use selected date if set, else fallback to getEasternIsoString()
   let saleDateStr = '';
   if (saleDateInput && saleDateInput.value) {
-    // Compose ISO string with 00:00:00 time
+    // Always use the current input value if present (even if editing)
     saleDateStr = saleDateInput.value + 'T00:00:00';
+  } else if (saleDateInput && saleDateInput.getAttribute('data-original-date')) {
+    // Only fallback if input is missing or empty
+    let orig = saleDateInput.getAttribute('data-original-date');
+    saleDateStr = (orig && orig.length >= 10) ? orig.substring(0,10) + 'T00:00:00' : getEasternIsoString();
   } else {
     saleDateStr = getEasternIsoString();
   }
+  // Debug: print date input and final date string
+  console.log('saleDateInput.value:', saleDateInput ? saleDateInput.value : '(no input)');
+  console.log('saleDateStr to be saved:', saleDateStr);
   const body={
     restaurantId:+restaurantSelect.value,
     cashAmount:c,
@@ -386,6 +398,7 @@ async function saveTx() {
     date: saleDateStr,
     capturedSaleAmount: capturedSaleAmountInput ? +capturedSaleAmountInput.value : 0
   };
+  console.log('Request body to be sent:', body);
   let wasEdit = !!editId;
   if(editId){
     await fetch('/api/sales/'+editId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
