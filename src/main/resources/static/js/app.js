@@ -351,14 +351,15 @@ function cancelEdit(){
   // Always get the latest input elements by ID and clear them
   const ids = [
     'cashAmount', 'visaAmount', 'doordashAmount', 'grubhubAmount', 'ubereatsAmount', 'onlineAmount',
-    'storeName', 'expenseAmount', 'calcTotal'
+    'storeName', 'expenseAmount', 'calcTotal', 'capturedSaleAmount', 'saleDate'
   ];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  // Reset calculated totals and input styling
+  recalcTotal();
 }
-
 async function saveTx() {
   const expenseAmountInput = document.getElementById('expenseAmount');
   const doordashAmount = document.getElementById('doordashAmount');
@@ -1016,8 +1017,47 @@ function printSupplierPDF() {
   if (search) search.style.display = 'none';
   if (pag) pag.style.display = 'none';
   if (tabs) tabs.style.display = 'none';
+
+  // Expand table to include ALL filtered supplier rows (not just current page)
+  const tbody = document.getElementById('supplierRows');
+  const originalTbody = tbody ? tbody.innerHTML : null;
+  try {
+    if (tbody) {
+      // Recreate filtered list same as renderSupplierTable
+      const selectedRestaurantId = getSelectedRestaurantId();
+      let filtered = supplierData.filter(row => row.restaurantId == selectedRestaurantId);
+      if (supplierSearchTerm) {
+        filtered = filtered.filter(row =>
+          (row.supplierName && row.supplierName.toLowerCase().includes(supplierSearchTerm)) ||
+          (row.transactionDate && row.transactionDate.toLowerCase().includes(supplierSearchTerm)) ||
+          (row.invoiceNumber && row.invoiceNumber.toLowerCase().includes(supplierSearchTerm)) ||
+          (row.checkNumber && row.checkNumber.toLowerCase().includes(supplierSearchTerm)) ||
+          (row.invoiceAmount && String(row.invoiceAmount).toLowerCase().includes(supplierSearchTerm)) ||
+          (row.notes && row.notes.toLowerCase().includes(supplierSearchTerm))
+        );
+      }
+      let fullHtml = '';
+      filtered.forEach((row) => {
+        fullHtml += `<tr>
+          <td>${row.supplierName || ''}</td>
+          <td>${row.transactionDate ? row.transactionDate : ''}</td>
+          <td>${row.invoiceNumber || ''}</td>
+          <td>${row.checkNumber || ''}</td>
+          <td>$${Number(row.invoiceAmount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+          <td>${row.notes || ''}</td>
+          <td></td>
+        </tr>`;
+      });
+      tbody.innerHTML = fullHtml;
+    }
+  } catch (e) {
+    console.error('Error preparing supplier table for print:', e);
+  }
+
   window.print();
   setTimeout(() => {
+    // Restore
+    if (tbody && originalTbody !== null) tbody.innerHTML = originalTbody;
     if (form) form.style.display = '';
     if (search) search.style.display = '';
     if (pag) pag.style.display = '';
@@ -1084,8 +1124,42 @@ function printPDF() {
   if (pag) pag.style.display = 'none';
   if (tabs) tabs.style.display = 'none';
   if (dateRange) dateRange.style.display = 'none';
+
+  // Backup and render ALL filtered sales rows into tbody for printing
+  const rowsElem = document.getElementById('rows');
+  const originalRows = rowsElem ? rowsElem.innerHTML : null;
+  try {
+    if (rowsElem) {
+      const filtered = getFilteredData();
+      let html = '';
+      filtered.forEach(x => {
+        const saleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
+        const netSaleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
+        html += `<tr>
+          <td>${x.date ? x.date.substring(0,10) : ''}</td>
+          <td>${fmt(x.capturedSaleAmount||0)}</td>
+          <td>${fmt(x.cashAmount)}</td>
+          <td>${fmt(x.visaAmount)}</td>
+          <td>${fmt(x.doordashAmount||0)}</td>
+          <td>${fmt(x.grubhubAmount||0)}</td>
+          <td>${fmt(x.ubereatsAmount||0)}</td>
+          <td>${fmt(x.onlineAmount||0)}</td>
+          <td>${x.storeName??''}</td>
+          <td>${fmt(x.expenseAmount||0)}</td>
+          <td>${fmt(saleAmount)}</td>
+          <td></td>
+        </tr>`;
+      });
+      rowsElem.innerHTML = html;
+    }
+  } catch (e) {
+    console.error('Error preparing sales table for print:', e);
+  }
+
   window.print();
   setTimeout(() => {
+    // Restore
+    if (rowsElem && originalRows !== null) rowsElem.innerHTML = originalRows;
     if (form) form.style.display = '';
     if (search) search.style.display = '';
     if (pag) pag.style.display = '';
