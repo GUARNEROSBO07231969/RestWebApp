@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales by Week Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .content {
+      padding: 30px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .control-group label {
+      font-weight: 600;
+      color: #334155;
+      font-size: 14px;
+    }
+    
+    select {
+      padding: 10px 15px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      min-width: 250px;
+    }
+    
+    select:hover {
+      border-color: #2563eb;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .summary-card {
+      padding: 16px;
+      border-radius: 10px;
+      border-left: 4px solid;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s;
+    }
+    
+    .summary-card:hover {
+      transform: translateY(-2px);
+    }
+    
+    .summary-card.blue {
+      background: #f0f9ff;
+      border-color: #2563eb;
+    }
+    
+    .summary-card.green {
+      background: #f0fdf4;
+      border-color: #22c55e;
+    }
+    
+    .summary-card.yellow {
+      background: #fef3c7;
+      border-color: #f59e42;
+    }
+    
+    .summary-card.pink {
+      background: #fce7f3;
+      border-color: #ec4899;
+    }
+    
+    .summary-card.purple {
+      background: #f3e8ff;
+      border-color: #9333ea;
+    }
+    
+    .summary-card-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .summary-card-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: inherit;
+    }
+    
+    .summary-card.blue .summary-card-value { color: #2563eb; }
+    .summary-card.green .summary-card-value { color: #22c55e; }
+    .summary-card.yellow .summary-card-value { color: #f59e42; }
+    .summary-card.pink .summary-card-value { color: #ec4899; }
+    .summary-card.purple .summary-card-value { color: #9333ea; }
+    
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    thead {
+      background: #f1f5f9;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    
+    th {
+      padding: 14px;
+      text-align: right;
+      font-weight: 600;
+      color: #334155;
+      white-space: nowrap;
+    }
+    
+    th:first-child {
+      text-align: left;
+    }
+    
+    td {
+      padding: 12px 14px;
+      text-align: right;
+      border-bottom: 1px solid #e2e8f0;
+      color: #475569;
+    }
+    
+    td:first-child {
+      text-align: left;
+      font-weight: 500;
+      color: #334155;
+    }
+    
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+    
+    tbody tr.highlight {
+      background: rgba(254, 242, 242, 0.92) !important;
+      color: #b91c1c;
+      border: 1px solid #dc2626 !important;
+    }
+    
+    tbody tr.totals {
+      background: #fef3c7;
+      font-weight: bold;
+      color: #92400e;
+      border-top: 2px solid #f59e42;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+    }
+    
+    .no-data-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 10px 16px;
+      background: #e5e7eb;
+      color: #374151;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .back-link:hover {
+      background: #d1d5db;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .export-button {
+      padding: 10px 16px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .export-button:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Sales by Week Dashboard</h1>
+      <p>View detailed sales breakdown by week with comprehensive metrics</p>
+    </div>
+    
+    <div class="content">
+      <a href="javascript:history.back()" class="back-link">← Back to App</a>
+      
+      <div class="controls">
+        <div class="control-group">
+          <label for="weekSelector">Select Week:</label>
+          <select id="weekSelector" onchange="onWeekSelectorChange()">
+            <option value="">Loading weeks...</option>
+          </select>
+        </div>
+        <div class="button-group">
+          <button class="export-button" onclick="exportWeekToPDF()">🖨️ Print PDF</button>
+          <button class="export-button" onclick="exportWeekToExcel()">📋 Print Excel</button>
+          <a href="/" class="export-button" style="text-decoration: none; display: inline-flex; align-items: center;">📊 Sales Dashboard</a>
+        </div>
+      </div>
+      
+      <div id="weekSalesSummary" class="summary-grid">
+        <!-- Summary cards populated by JavaScript -->
+      </div>
+      
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Captured Sale</th>
+              <th>Cash</th>
+              <th>Visa</th>
+              <th>DoorDash</th>
+              <th>GrubHub</th>
+              <th>Uber Eats</th>
+              <th>Online</th>
+              <th>Store Name</th>
+              <th>Expense</th>
+              <th>Total Sale</th>
+            </tr>
+          </thead>
+          <tbody id="weekSalesTableBody">
+            <tr>
+              <td colspan="11" class="no-data">
+                <div class="no-data-icon">📈</div>
+                <div>Select a week to view sales details</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // Initialize dashboard when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      initSalesByWeekDashboard();
+    });
+    
+    // Re-initialize when filters change (if needed)
+    function refreshDashboard() {
+      initSalesByWeekDashboard();
+    }
+  </script>
+</body>
+</html>
