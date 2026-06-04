@@ -1020,7 +1020,11 @@ function printSupplierPDF() {
 
   // Expand table to include ALL filtered supplier rows (not just current page)
   const tbody = document.getElementById('supplierRows');
+  const supplierTableElem = document.getElementById('supplierTable');
   const originalTbody = tbody ? tbody.innerHTML : null;
+  let supplierTfoot = null;
+  let originalTfootDisplay = null;
+  
   try {
     if (tbody) {
       // Recreate filtered list same as renderSupplierTable
@@ -1036,9 +1040,23 @@ function printSupplierPDF() {
           (row.notes && row.notes.toLowerCase().includes(supplierSearchTerm))
         );
       }
+      
+      // Calculate grand total
+      let grandTotal = 0;
       let fullHtml = '';
       filtered.forEach((row) => {
-        fullHtml += `<tr>
+        const amount = Number(row.invoiceAmount) || 0;
+        grandTotal += amount;
+        
+        // Apply highlighting for edit/delete states (if applicable)
+        let highlight = '';
+        if (supplierEditId === row.id) {
+          highlight = ' style="background:linear-gradient(90deg,#fef9c3 80%,#fde047 100%)!important;color:#92400e!important;border:2.5px solid #fde047!important;box-shadow:0 4px 18px 0 #fde04755,0 1.5px 6px 0 #fde04733;outline:2px solid #fde047;outline-offset:-2px;font-weight:600;position:relative;overflow:hidden;transition:background 0.3s,color 0.2s,box-shadow 0.3s;animation:rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;z-index:1;"';
+        } else if (supplierDeleteId === row.id) {
+          highlight = ' style="background:#dc2626 !important;color:#fff !important;border:2.5px solid #dc2626 !important;box-shadow:0 0 8px #dc2626;"';
+        }
+        
+        fullHtml += `<tr${highlight}>
           <td>${row.supplierName || ''}</td>
           <td>${row.transactionDate ? row.transactionDate : ''}</td>
           <td>${row.invoiceNumber || ''}</td>
@@ -1049,15 +1067,45 @@ function printSupplierPDF() {
         </tr>`;
       });
       tbody.innerHTML = fullHtml;
+      
+      // Update tfoot totals
+      if (supplierTableElem) {
+        supplierTfoot = supplierTableElem.querySelector('tfoot');
+        if (supplierTfoot) {
+          originalTfootDisplay = supplierTfoot.style.display;
+          const grandTotalCell = supplierTfoot.querySelector('#supplier-grand-total');
+          if (grandTotalCell) {
+            grandTotalCell.textContent = `$${grandTotal.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2})}`;
+          }
+          supplierTfoot.style.display = '';
+        }
+      }
     }
   } catch (e) {
     console.error('Error preparing supplier table for print:', e);
+  }
+
+  // Hide tfoot during print and append totals as last row in tbody instead
+  if (supplierTfoot) {
+    originalTfootDisplay = supplierTfoot.style.display;
+    supplierTfoot.style.display = 'none';
+  }
+
+  // Add totals row as final row in tbody for printing
+  if (tbody && supplierTfoot) {
+    const totalRows = supplierTfoot.querySelectorAll('tr');
+    if (totalRows.length > 0) {
+      const totalRow = totalRows[0];
+      const clonedRow = totalRow.cloneNode(true);
+      tbody.appendChild(clonedRow);
+    }
   }
 
   window.print();
   setTimeout(() => {
     // Restore
     if (tbody && originalTbody !== null) tbody.innerHTML = originalTbody;
+    if (supplierTfoot) supplierTfoot.style.display = originalTfootDisplay || '';
     if (form) form.style.display = '';
     if (search) search.style.display = '';
     if (pag) pag.style.display = '';
@@ -1140,6 +1188,7 @@ function printPDF() {
       
       filtered.forEach(x => {
         const saleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
+        const netSaleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
         totalCash += x.cashAmount||0;
         totalVisa += x.visaAmount||0;
         totalDoordash += x.doordashAmount||0;
@@ -1150,7 +1199,15 @@ function printPDF() {
         totalSale += saleAmount;
         totalCapturedSale += x.capturedSaleAmount||0;
         
-        html += `<tr>
+        // Apply same highlighting logic as renderTable
+        let highlight = '';
+        if (editId === x.id) {
+          highlight = ' style="background:linear-gradient(90deg,#fef9c3 80%,#fde047 100%)!important;color:#92400e!important;border:2.5px solid #fde047!important;box-shadow:0 4px 18px 0 #fde04755,0 1.5px 6px 0 #fde04733;outline:2px solid #fde047;outline-offset:-2px;font-weight:600;position:relative;overflow:hidden;transition:background 0.3s,color 0.2s,box-shadow 0.3s;animation:rowHighlightPulse 1.2s cubic-bezier(.4,0,.2,1) 1;z-index:1;"';
+        } else if ((saleAmount <= (x.capturedSaleAmount||0) - 200)) {
+          highlight = ' style="background:rgba(254,242,242,0.92)!important;color:#b91c1c !important;border:2.5px solid #dc2626 !important;box-shadow:0 0 0 2px #dc262655 !important;font-weight:600;transition:background 0.3s,color 0.2s,box-shadow 0.3s;z-index:1;position:relative;"';
+        }
+        
+        html += `<tr${highlight}>
           <td>${x.date ? x.date.substring(0,10) : ''}</td>
           <td>${fmt(x.capturedSaleAmount||0)}</td>
           <td>${fmt(x.cashAmount)}</td>
