@@ -1101,6 +1101,19 @@ function printSupplierPDF() {
     }
   }
 
+  // Add print CSS to preserve colors and styles
+  const printStyleElem = document.createElement('style');
+  printStyleElem.id = 'print-colors-style';
+  printStyleElem.textContent = `
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+      tr { background-color: inherit !important; }
+      td { background-color: inherit !important; color: inherit !important; border-color: inherit !important; }
+      .action-btn { display: none !important; }
+    }
+  `;
+  document.head.appendChild(printStyleElem);
+
   window.print();
   setTimeout(() => {
     // Restore
@@ -1261,6 +1274,19 @@ function printPDF() {
       rowsElem.appendChild(clonedRow);
     }
   }
+
+  // Add print CSS to preserve colors and styles
+  const printStyleElem = document.createElement('style');
+  printStyleElem.id = 'print-colors-style';
+  printStyleElem.textContent = `
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+      tr { background-color: inherit !important; }
+      td { background-color: inherit !important; color: inherit !important; border-color: inherit !important; }
+      .action-btn { display: none !important; }
+    }
+  `;
+  document.head.appendChild(printStyleElem);
 
   window.print();
   setTimeout(() => {
