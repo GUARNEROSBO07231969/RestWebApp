@@ -1127,14 +1127,29 @@ function printPDF() {
 
   // Backup and render ALL filtered sales rows into tbody for printing
   const rowsElem = document.getElementById('rows');
+  const salesTableElem = document.getElementById('salesTable');
   const originalRows = rowsElem ? rowsElem.innerHTML : null;
+  let salesTfoot = null;
+  let originalTfootDisplay = null;
+  
   try {
     if (rowsElem) {
       const filtered = getFilteredData();
       let html = '';
+      let totalCash=0, totalVisa=0, totalDoordash=0, totalGrubhub=0, totalUber=0, totalOnline=0, totalExpense=0, totalSale=0, totalCapturedSale=0;
+      
       filtered.forEach(x => {
         const saleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)+(x.expenseAmount||0);
-        const netSaleAmount = (x.cashAmount||0)+(x.visaAmount||0)+(x.doordashAmount||0)+(x.grubhubAmount||0)+(x.ubereatsAmount||0)+(x.onlineAmount||0)-(x.expenseAmount||0);
+        totalCash += x.cashAmount||0;
+        totalVisa += x.visaAmount||0;
+        totalDoordash += x.doordashAmount||0;
+        totalGrubhub += x.grubhubAmount||0;
+        totalUber += x.ubereatsAmount||0;
+        totalOnline += x.onlineAmount||0;
+        totalExpense += x.expenseAmount||0;
+        totalSale += saleAmount;
+        totalCapturedSale += x.capturedSaleAmount||0;
+        
         html += `<tr>
           <td>${x.date ? x.date.substring(0,10) : ''}</td>
           <td>${fmt(x.capturedSaleAmount||0)}</td>
@@ -1151,15 +1166,50 @@ function printPDF() {
         </tr>`;
       });
       rowsElem.innerHTML = html;
+      
+      // Update tfoot totals to match the printed rows
+      if (salesTableElem) {
+        salesTfoot = salesTableElem.querySelector('tfoot');
+        if (salesTfoot) {
+          originalTfootDisplay = salesTfoot.style.display;
+          document.getElementById('footer-cashAmount').textContent = fmt(totalCash);
+          document.getElementById('footer-visaAmount').textContent = fmt(totalVisa);
+          document.getElementById('footer-doordashAmount').textContent = fmt(totalDoordash);
+          document.getElementById('footer-grubhubAmount').textContent = fmt(totalGrubhub);
+          document.getElementById('footer-ubereatsAmount').textContent = fmt(totalUber);
+          document.getElementById('footer-onlineAmount').textContent = fmt(totalOnline);
+          document.getElementById('footer-expenseAmount').textContent = fmt(totalExpense);
+          document.getElementById('footer-saleAmount').textContent = fmt(totalSale);
+          document.getElementById('footer-capturedSaleAmount').textContent = fmt(totalCapturedSale);
+          salesTfoot.style.display = '';
+        }
+      }
     }
   } catch (e) {
     console.error('Error preparing sales table for print:', e);
+  }
+
+  // Hide tfoot during print and append totals as last row in tbody instead
+  if (salesTfoot) {
+    originalTfootDisplay = salesTfoot.style.display;
+    salesTfoot.style.display = 'none';
+  }
+
+  // Add totals row as final row in tbody for printing
+  if (rowsElem && salesTfoot) {
+    const totalRows = salesTfoot.querySelectorAll('tr');
+    if (totalRows.length > 0) {
+      const totalRow = totalRows[0];
+      const clonedRow = totalRow.cloneNode(true);
+      rowsElem.appendChild(clonedRow);
+    }
   }
 
   window.print();
   setTimeout(() => {
     // Restore
     if (rowsElem && originalRows !== null) rowsElem.innerHTML = originalRows;
+    if (salesTfoot) salesTfoot.style.display = originalTfootDisplay || '';
     if (form) form.style.display = '';
     if (search) search.style.display = '';
     if (pag) pag.style.display = '';
