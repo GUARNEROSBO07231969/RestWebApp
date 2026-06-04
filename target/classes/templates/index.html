@@ -100,7 +100,7 @@
       <div class="print-btns" style="display:flex;align-items:center;gap:8px;margin-left:auto;">
         <button class="btn btn-secondary" onclick="printPDF()">🖨️ Print PDF</button>
         <button class="btn btn-secondary" onclick="printExcel()">📥 Print Excel</button>
-        <a href="/sales-by-week.html" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;">📊 Sales Dashboard</a>
+        <a href="/sales-by-week.html?restaurantId=" id="salesDashboardLink" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;">📊 Sales Dashboard</a>
       </div>
     </div>
 
@@ -200,6 +200,30 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/js/app.js"></script>
   <script>
+// Update Sales Dashboard link with current restaurant ID
+function updateSalesDashboardLink() {
+  const restaurantSelect = document.getElementById('restaurantSelect');
+  const dashboardLink = document.getElementById('salesDashboardLink');
+  if (restaurantSelect && dashboardLink) {
+    let restaurantId = restaurantSelect.value;
+    // If no value selected, use the first restaurant in the dropdown
+    if (!restaurantId && restaurantSelect.options.length > 0) {
+      restaurantId = restaurantSelect.options[0].value;
+    }
+    dashboardLink.href = `/sales-by-week.html?restaurantId=${restaurantId}`;
+  }
+}
+
+// Call when page loads and when restaurant changes
+document.addEventListener('DOMContentLoaded', function() {
+  // Wait a moment for the restaurant selector to populate
+  setTimeout(updateSalesDashboardLink, 500);
+  const restaurantSelect = document.getElementById('restaurantSelect');
+  if (restaurantSelect) {
+    restaurantSelect.addEventListener('change', updateSalesDashboardLink);
+  }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   // Set default date for supplier transaction date input
   const dateInput = document.getElementById('transactionDate');
