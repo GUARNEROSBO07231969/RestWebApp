@@ -276,7 +276,7 @@
     </div>
     
     <div class="content">
-      <a href="javascript:history.back()" class="back-link">← Back to App</a>
+      <a href="javascript:history.back()" class="back-link" id="backLink">← Back to App</a>
       
       <div id="restaurantTitle" style="margin-bottom: 20px; font-size: 18px; font-weight: 600; color: #1e293b;">
         Loading...
@@ -396,6 +396,20 @@
       }
     }
     
+    // Update back link to return to Sales tab with selected restaurant preserved
+    function updateBackLink() {
+      const backLink = document.getElementById('backLink');
+      if (backLink && selectedRestaurantId) {
+        const backURL = `/?restaurantId=${selectedRestaurantId}#sales`;
+        backLink.href = backURL;
+        backLink.onclick = function(e) {
+          e.preventDefault();
+          // Use window.location instead of history.back() to ensure URL is set
+          window.location.href = backURL;
+        };
+      }
+    }
+    
     // Load sales data for selected restaurant
     async function loadSalesData() {
       try {
@@ -407,6 +421,9 @@
         
         // Populate week dropdown
         populateWeekDropdown();
+        
+        // Update back link to preserve restaurant selection
+        updateBackLink();
         
         // Display first week by default
         const sortedWeeks = Object.keys(allWeekData).sort().reverse();

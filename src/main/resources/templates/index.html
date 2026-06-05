@@ -214,10 +214,41 @@ function updateSalesDashboardLink() {
   }
 }
 
+// Restore restaurant selection from URL parameter if present
+function restoreRestaurantFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const restaurantId = urlParams.get('restaurantId');
+  const restaurantSelect = document.getElementById('restaurantSelect');
+  
+  if (restaurantId && restaurantSelect) {
+    // Set value without triggering change event yet
+    restaurantSelect.value = restaurantId;
+    
+    // Manually call loadData to avoid the onchange event
+    if (typeof loadData === 'function') {
+      loadData();
+    }
+    
+    // Switch to Sales tab if hash indicates it
+    if (window.location.hash === '#sales') {
+      switchTab('sales');
+    }
+    
+    // Clean up URL to remove parameter
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
 // Call when page loads and when restaurant changes
 document.addEventListener('DOMContentLoaded', function() {
-  // Wait a moment for the restaurant selector to populate
-  setTimeout(updateSalesDashboardLink, 500);
+  // Wait for the restaurant selector to populate first
+  setTimeout(function() {
+    // Restore restaurant selection from URL after dropdown is populated
+    restoreRestaurantFromURL();
+    // Then update the dashboard link
+    updateSalesDashboardLink();
+  }, 1000);
+  
   const restaurantSelect = document.getElementById('restaurantSelect');
   if (restaurantSelect) {
     restaurantSelect.addEventListener('change', updateSalesDashboardLink);
