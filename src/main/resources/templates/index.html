@@ -290,7 +290,31 @@ function groupDashboardSalesByWeek(salesData) {
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
     const day = date.getDate();
-    const week = Math.ceil(day / 7);
+    
+    // Get the number of days in this month
+    const daysInMonth = new Date(year, month, 0).getDate();
+    
+    // Determine week based on month length
+    let week;
+    if (daysInMonth === 31) {
+      // 31 days: W1(1-7), W2(8-15), W3(16-23), W4(24-31)
+      if (day <= 7) week = 1;
+      else if (day <= 15) week = 2;
+      else if (day <= 23) week = 3;
+      else week = 4;
+    } else if (daysInMonth === 30) {
+      // 30 days: W1(1-7), W2(8-14), W3(15-22), W4(23-30)
+      if (day <= 7) week = 1;
+      else if (day <= 14) week = 2;
+      else if (day <= 22) week = 3;
+      else week = 4;
+    } else {
+      // Feb or less than 30 days: W1(1-7), W2(8-14), W3(15-21), W4(22-last)
+      if (day <= 7) week = 1;
+      else if (day <= 14) week = 2;
+      else if (day <= 21) week = 3;
+      else week = 4;
+    }
     
     const monthYear = `${year}-${String(month).padStart(2, '0')}`;
     const weekKey = `${monthYear}-W${week}`;
@@ -428,7 +452,171 @@ function onDashboardWeekChange() {
 }
 
 function exportDashboardWeekToPDF() {
-  alert('PDF export functionality coming soon');
+  const dropdown = document.getElementById('dashboardWeekSelector');
+  const weekKey = dropdown.value;
+  
+  if (!weekKey || !dashboardWeekData[weekKey]) {
+    alert('Please select a week first');
+    return;
+  }
+  
+  const weekData = dashboardWeekData[weekKey];
+  const restaurantSelect = document.getElementById('restaurantSelect');
+  const restaurantName = restaurantSelect.options[restaurantSelect.selectedIndex]?.text || 'Restaurant';
+  
+  const fmt = (v) => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  
+  // Calculate totals
+  let totalCash = 0, totalVisa = 0, totalDoordash = 0, totalGrubhub = 0, 
+      totalUber = 0, totalOnline = 0, totalExpense = 0, totalSale = 0, totalCaptured = 0;
+  
+  weekData.rows.forEach(row => {
+    const saleAmount = (row.cashAmount||0) + (row.visaAmount||0) + (row.doordashAmount||0) + 
+                      (row.grubhubAmount||0) + (row.ubereatsAmount||0) + (row.onlineAmount||0) + (row.expenseAmount||0);
+    totalCash += row.cashAmount || 0;
+    totalVisa += row.visaAmount || 0;
+    totalDoordash += row.doordashAmount || 0;
+    totalGrubhub += row.grubhubAmount || 0;
+    totalUber += row.ubereatsAmount || 0;
+    totalOnline += row.onlineAmount || 0;
+    totalExpense += row.expenseAmount || 0;
+    totalSale += saleAmount;
+    totalCaptured += row.capturedSaleAmount || 0;
+  });
+  
+  // Build table rows HTML
+  let tableRows = '';
+  weekData.rows.forEach(row => {
+    const saleAmount = (row.cashAmount||0) + (row.visaAmount||0) + (row.doordashAmount||0) + 
+                      (row.grubhubAmount||0) + (row.ubereatsAmount||0) + (row.onlineAmount||0) + (row.expenseAmount||0);
+    let rowStyle = '';
+    if (saleAmount <= (row.capturedSaleAmount||0) - 200) {
+      rowStyle = 'style="background-color: #fee2e2; color: #991b1b;"';
+    }
+    tableRows += `
+      <tr ${rowStyle}>
+        <td style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">${row.date ? row.date.substring(0,10) : ''}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${fmt(row.capturedSaleAmount||0)}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${fmt(row.cashAmount||0)}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${fmt(row.visaAmount||0)}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${fmt(row.doordashAmount||0)}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${fmt(row.grubhubAmount||0)}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${fmt(row.ubereatsAmount||0)}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${fmt(row.onlineAmount||0)}</td>
+        <td style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">${row.storeName||''}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${fmt(row.expenseAmount||0)}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${fmt(saleAmount)}</td>
+      </tr>
+    `;
+  });
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Sales Dashboard - ${weekData.label}</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 20px; color: #1e293b; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { margin: 5px 0; color: #2563eb; font-size: 24px; }
+        .header p { margin: 5px 0; color: #64748b; }
+        .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 30px; }
+        .summary-card { padding: 15px; border-radius: 8px; text-align: center; }
+        .card-label { font-size: 12px; color: #666; margin-bottom: 8px; }
+        .card-value { font-size: 20px; font-weight: bold; }
+        .card-captured { background-color: #f0f9ff; color: #2563eb; border-left: 4px solid #2563eb; }
+        .card-sale { background-color: #f0fdf4; color: #22c55e; border-left: 4px solid #22c55e; }
+        .card-cash { background-color: #fef3c7; color: #f59e42; border-left: 4px solid #f59e42; }
+        .card-expense { background-color: #fce7f3; color: #ec4899; border-left: 4px solid #ec4899; }
+        .card-count { background-color: #f3e8ff; color: #9333ea; border-left: 4px solid #9333ea; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background-color: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+        .total-row { background-color: #fef3c7; font-weight: bold; }
+        .total-row td { border-bottom: 2px solid #e2e8f0; }
+        @media print {
+          body { margin: 0; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>📊 Sales Dashboard</h1>
+        <p><strong>${restaurantName}</strong></p>
+        <p>${weekData.label}</p>
+        <p>Report generated on ${new Date().toLocaleDateString()}</p>
+      </div>
+      
+      <div class="summary-grid">
+        <div class="summary-card card-captured">
+          <div class="card-label">Total Captured</div>
+          <div class="card-value">${fmt(totalCaptured)}</div>
+        </div>
+        <div class="summary-card card-sale">
+          <div class="card-label">Total Sale</div>
+          <div class="card-value">${fmt(totalSale)}</div>
+        </div>
+        <div class="summary-card card-cash">
+          <div class="card-label">Total Cash</div>
+          <div class="card-value">${fmt(totalCash)}</div>
+        </div>
+        <div class="summary-card card-expense">
+          <div class="card-label">Total Expense</div>
+          <div class="card-value">${fmt(totalExpense)}</div>
+        </div>
+        <div class="summary-card card-count">
+          <div class="card-label">Transactions</div>
+          <div class="card-value">${weekData.rows.length}</div>
+        </div>
+      </div>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th style="text-align: right;">Captured Sale</th>
+            <th style="text-align: right;">Cash</th>
+            <th style="text-align: right;">Visa</th>
+            <th style="text-align: right;">DoorDash</th>
+            <th style="text-align: right;">GrubHub</th>
+            <th style="text-align: right;">Uber Eats</th>
+            <th style="text-align: right;">Online</th>
+            <th>Store Name</th>
+            <th style="text-align: right;">Expense</th>
+            <th style="text-align: right;">Total Sale</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+          <tr class="total-row">
+            <td>TOTAL</td>
+            <td style="text-align: right;">${fmt(totalCaptured)}</td>
+            <td style="text-align: right;">${fmt(totalCash)}</td>
+            <td style="text-align: right;">${fmt(totalVisa)}</td>
+            <td style="text-align: right;">${fmt(totalDoordash)}</td>
+            <td style="text-align: right;">${fmt(totalGrubhub)}</td>
+            <td style="text-align: right;">${fmt(totalUber)}</td>
+            <td style="text-align: right;">${fmt(totalOnline)}</td>
+            <td></td>
+            <td style="text-align: right;">${fmt(totalExpense)}</td>
+            <td style="text-align: right;">${fmt(totalSale)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+  
+  // Open in new window for print preview
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(html);
+  printWindow.document.close();
+  
+  // Trigger print dialog after a short delay
+  setTimeout(() => {
+    printWindow.print();
+  }, 250);
 }
 
 function exportDashboardWeekToExcel() {
