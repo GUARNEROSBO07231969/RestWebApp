@@ -518,6 +518,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Restore restaurant selection from URL after dropdown is populated
     restoreRestaurantFromURL();
   }, 1000);
+  
+  // Reload dashboard data when restaurant changes
+  const restaurantSelect = document.getElementById('restaurantSelect');
+  if (restaurantSelect) {
+    restaurantSelect.addEventListener('change', function() {
+      // Reload dashboard data whenever restaurant changes (regardless of active tab)
+      loadDashboardData();
+    });
+  }
 });
 
 document.addEventListener('DOMContentLoaded', function() {
