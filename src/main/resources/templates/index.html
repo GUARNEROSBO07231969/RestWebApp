@@ -608,19 +608,105 @@ function exportDashboardWeekToPDF() {
     </html>
   `;
   
-  // Open in new window for print preview
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(html);
-  printWindow.document.close();
+  // Create hidden iframe for printing
+  let printFrame = document.getElementById('dashboardPrintFrame');
+  if (!printFrame) {
+    printFrame = document.createElement('iframe');
+    printFrame.id = 'dashboardPrintFrame';
+    printFrame.style.display = 'none';
+    document.body.appendChild(printFrame);
+  }
   
-  // Trigger print dialog after a short delay
+  // Write content to iframe
+  const frameDoc = printFrame.contentDocument || printFrame.contentWindow.document;
+  frameDoc.open();
+  frameDoc.write(html);
+  frameDoc.close();
+  
+  // Trigger print dialog after content is loaded
   setTimeout(() => {
-    printWindow.print();
+    printFrame.contentWindow.print();
   }, 250);
 }
 
 function exportDashboardWeekToExcel() {
-  alert('Excel export functionality coming soon');
+  const dropdown = document.getElementById('dashboardWeekSelector');
+  const weekKey = dropdown.value;
+  
+  if (!weekKey || !dashboardWeekData[weekKey]) {
+    alert('Please select a week first');
+    return;
+  }
+  
+  const weekData = dashboardWeekData[weekKey];
+  const restaurantSelect = document.getElementById('restaurantSelect');
+  const restaurantName = restaurantSelect.options[restaurantSelect.selectedIndex]?.text || 'Restaurant';
+  
+  const fmt = (v) => Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  
+  // Calculate totals
+  let totalCash = 0, totalVisa = 0, totalDoordash = 0, totalGrubhub = 0, 
+      totalUber = 0, totalOnline = 0, totalExpense = 0, totalSale = 0, totalCaptured = 0;
+  
+  weekData.rows.forEach(row => {
+    const saleAmount = (row.cashAmount||0) + (row.visaAmount||0) + (row.doordashAmount||0) + 
+                      (row.grubhubAmount||0) + (row.ubereatsAmount||0) + (row.onlineAmount||0) + (row.expenseAmount||0);
+    totalCash += row.cashAmount || 0;
+    totalVisa += row.visaAmount || 0;
+    totalDoordash += row.doordashAmount || 0;
+    totalGrubhub += row.grubhubAmount || 0;
+    totalUber += row.ubereatsAmount || 0;
+    totalOnline += row.onlineAmount || 0;
+    totalExpense += row.expenseAmount || 0;
+    totalSale += saleAmount;
+    totalCaptured += row.capturedSaleAmount || 0;
+  });
+  
+  // Create CSV content
+  let csv = 'Sales Dashboard Report\n';
+  csv += `Restaurant,${restaurantName}\n`;
+  csv += `Week,${weekData.label}\n`;
+  csv += `Report Generated,${new Date().toLocaleDateString()}\n\n`;
+  
+  csv += 'Summary\n';
+  csv += `Total Captured,$${fmt(totalCaptured)}\n`;
+  csv += `Total Sale,$${fmt(totalSale)}\n`;
+  csv += `Total Cash,$${fmt(totalCash)}\n`;
+  csv += `Total Expense,$${fmt(totalExpense)}\n`;
+  csv += `Transaction Count,${weekData.rows.length}\n\n`;
+  
+  csv += 'Sales Details\n';
+  csv += 'Date,Captured Sale,Cash,Visa,DoorDash,GrubHub,Uber Eats,Online,Store Name,Expense,Total Sale\n';
+  
+  weekData.rows.forEach(row => {
+    const saleAmount = (row.cashAmount||0) + (row.visaAmount||0) + (row.doordashAmount||0) + 
+                      (row.grubhubAmount||0) + (row.ubereatsAmount||0) + (row.onlineAmount||0) + (row.expenseAmount||0);
+    csv += `${row.date ? row.date.substring(0,10) : ''},`;
+    csv += `$${fmt(row.capturedSaleAmount||0)},`;
+    csv += `$${fmt(row.cashAmount||0)},`;
+    csv += `$${fmt(row.visaAmount||0)},`;
+    csv += `$${fmt(row.doordashAmount||0)},`;
+    csv += `$${fmt(row.grubhubAmount||0)},`;
+    csv += `$${fmt(row.ubereatsAmount||0)},`;
+    csv += `$${fmt(row.onlineAmount||0)},`;
+    csv += `${row.storeName||''},`;
+    csv += `$${fmt(row.expenseAmount||0)},`;
+    csv += `$${fmt(saleAmount)}\n`;
+  });
+  
+  csv += `\nTOTAL,$${fmt(totalCaptured)},$${fmt(totalCash)},$${fmt(totalVisa)},$${fmt(totalDoordash)},$${fmt(totalGrubhub)},$${fmt(totalUber)},$${fmt(totalOnline)},,`; 
+  csv += `$${fmt(totalExpense)},$${fmt(totalSale)}\n`;
+  
+  // Create blob and download
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', `Sales-Dashboard-${weekData.label.replace(/\s+/g, '-')}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 // Restore restaurant selection from URL parameter if present
 function restoreRestaurantFromURL() {
