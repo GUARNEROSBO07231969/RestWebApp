@@ -38,6 +38,7 @@
   <ul class="tab-menu">
       <li id="tabSales" class="tab tab-active" onclick="switchTab('sales')"><span class="tab-icon">💰</span>Sales</li>
       <li id="tabSuppliers" class="tab" onclick="switchTab('suppliers')"><span class="tab-icon">📦</span>Supplier Expenses</li>
+      <li id="tabSalesDashboard" class="tab" onclick="switchTab('salesDashboard')"><span class="tab-icon">📊</span>Sales Dashboard</li>
       <div class="tab-slider" id="tabSlider"></div>
     </ul>
   <!-- Only Sales and Supplier Expenses tab content sections -->
@@ -100,7 +101,6 @@
       <div class="print-btns" style="display:flex;align-items:center;gap:8px;margin-left:auto;">
         <button class="btn btn-secondary" onclick="printPDF()">🖨️ Print PDF</button>
         <button class="btn btn-secondary" onclick="printExcel()">📥 Print Excel</button>
-        <a href="/sales-by-week.html?restaurantId=" id="salesDashboardLink" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;">📊 Sales Dashboard</a>
       </div>
     </div>
 
@@ -195,25 +195,245 @@
     </table>
     <div id="supplierPagination" class="pagination"></div>
   </div>
+  <div id="tabContentSalesDashboard" class="tab-content" style="display:none;">
+    <div style="margin-bottom: 20px;">
+      <p style="font-size: 14px; color: #666; margin-bottom: 20px;">📊 View detailed sales breakdown by week with comprehensive metrics</p>
+    </div>
+    
+    <div class="controls" style="display: flex; gap: 15px; margin-bottom: 30px; align-items: center; flex-wrap: wrap;">
+      <div class="control-group" style="display: flex; align-items: center; gap: 10px;">
+        <label for="dashboardWeekSelector" style="font-weight: 600; color: #334155; font-size: 14px;">Select Week:</label>
+        <select id="dashboardWeekSelector" onchange="onDashboardWeekChange()" style="padding: 10px 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; transition: all 0.3s; min-width: 250px;">
+          <option value="">Loading weeks...</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="exportDashboardWeekToPDF()" style="padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">🖨️ Print PDF</button>
+        <button class="btn btn-secondary" onclick="exportDashboardWeekToExcel()" style="padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">📋 Print Excel</button>
+      </div>
+    </div>
+    
+    <div id="dashboardWeekSalesSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px;">
+      <!-- Summary cards populated by JavaScript -->
+    </div>
+    
+    <div style="overflow-x: auto; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead style="background: #f1f5f9; border-bottom: 2px solid #e2e8f0;">
+          <tr>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Date</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">Captured Sale</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">Cash</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">Visa</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">DoorDash</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">GrubHub</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">Uber Eats</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">Online</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Store Name</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">Expense</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">Total Sale</th>
+          </tr>
+        </thead>
+        <tbody id="dashboardWeekSalesTableBody" style="font-size: 14px;">
+          <tr>
+            <td colspan="11" style="text-align: center; padding: 40px; color: #94a3b8;">
+              <div style="font-size: 48px; margin-bottom: 15px;">📈</div>
+              <div>Select a week to view sales details</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/js/app.js"></script>
   <script>
-// Update Sales Dashboard link with current restaurant ID
-function updateSalesDashboardLink() {
+// Sales Dashboard data and functions
+let dashboardWeekData = {};
+
+function loadDashboardData() {
   const restaurantSelect = document.getElementById('restaurantSelect');
-  const dashboardLink = document.getElementById('salesDashboardLink');
-  if (restaurantSelect && dashboardLink) {
-    let restaurantId = restaurantSelect.value;
-    // If no value selected, use the first restaurant in the dropdown
-    if (!restaurantId && restaurantSelect.options.length > 0) {
-      restaurantId = restaurantSelect.options[0].value;
+  if (!restaurantSelect || !restaurantSelect.value) {
+    console.warn('loadDashboardData: No restaurant selected');
+    return;
+  }
+  
+  console.log('loadDashboardData: Starting load for restaurant:', restaurantSelect.value);
+  const restaurantId = restaurantSelect.value;
+  
+  fetch(`/api/sales?restaurantId=${restaurantId}`)
+    .then(response => response.json())
+    .then(salesData => {
+      console.log('loadDashboardData: Received sales data, count:', salesData.length);
+      groupDashboardSalesByWeek(salesData);
+      populateDashboardWeekDropdown();
+      const sortedWeeks = Object.keys(dashboardWeekData).sort().reverse();
+      console.log('loadDashboardData: Weeks available:', sortedWeeks);
+      if (sortedWeeks.length > 0) {
+        document.getElementById('dashboardWeekSelector').value = sortedWeeks[0];
+        displayDashboardWeekSalesDetails(sortedWeeks[0]);
+      }
+    })
+    .catch(error => console.error('Error loading dashboard data:', error));
+}
+
+function groupDashboardSalesByWeek(salesData) {
+  dashboardWeekData = {};
+  
+  salesData.forEach(row => {
+    if (!row.date) return;
+    
+    const dateStr = row.date.substring(0, 10);
+    const date = new Date(dateStr + 'T00:00:00');
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const day = date.getDate();
+    const week = Math.ceil(day / 7);
+    
+    const monthYear = `${year}-${String(month).padStart(2, '0')}`;
+    const weekKey = `${monthYear}-W${week}`;
+    const weekLabel = `${monthYear} - Week ${week}`;
+    
+    if (!dashboardWeekData[weekKey]) {
+      dashboardWeekData[weekKey] = {
+        label: weekLabel,
+        monthYear,
+        week,
+        rows: []
+      };
     }
-    dashboardLink.href = `/sales-by-week.html?restaurantId=${restaurantId}`;
+    
+    dashboardWeekData[weekKey].rows.push(row);
+  });
+}
+
+function populateDashboardWeekDropdown() {
+  const dropdown = document.getElementById('dashboardWeekSelector');
+  if (!dropdown) return;
+  
+  dropdown.innerHTML = '';
+  const sortedWeeks = Object.keys(dashboardWeekData).sort().reverse();
+  
+  if (sortedWeeks.length === 0) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'No sales data available';
+    dropdown.appendChild(option);
+    return;
+  }
+  
+  sortedWeeks.forEach(weekKey => {
+    const option = document.createElement('option');
+    option.value = weekKey;
+    option.textContent = dashboardWeekData[weekKey].label + ` (${dashboardWeekData[weekKey].rows.length} sales)`;
+    dropdown.appendChild(option);
+  });
+}
+
+function displayDashboardWeekSalesDetails(weekKey) {
+  const fmt = (v) => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  
+  const weekData = dashboardWeekData[weekKey];
+  if (!weekData) return;
+  
+  const tbody = document.getElementById('dashboardWeekSalesTableBody');
+  const summaryDiv = document.getElementById('dashboardWeekSalesSummary');
+  
+  if (!tbody || !summaryDiv) return;
+  
+  tbody.innerHTML = '';
+  
+  let totalCash = 0, totalVisa = 0, totalDoordash = 0, totalGrubhub = 0, 
+      totalUber = 0, totalOnline = 0, totalExpense = 0, totalSale = 0, totalCaptured = 0;
+  
+  weekData.rows.forEach(row => {
+    const saleAmount = (row.cashAmount||0) + (row.visaAmount||0) + (row.doordashAmount||0) + 
+                      (row.grubhubAmount||0) + (row.ubereatsAmount||0) + (row.onlineAmount||0) + (row.expenseAmount||0);
+    
+    totalCash += row.cashAmount || 0;
+    totalVisa += row.visaAmount || 0;
+    totalDoordash += row.doordashAmount || 0;
+    totalGrubhub += row.grubhubAmount || 0;
+    totalUber += row.ubereatsAmount || 0;
+    totalOnline += row.onlineAmount || 0;
+    totalExpense += row.expenseAmount || 0;
+    totalSale += saleAmount;
+    totalCaptured += row.capturedSaleAmount || 0;
+    
+    let highlight = '';
+    if (saleAmount <= (row.capturedSaleAmount||0) - 200) {
+      highlight = ' style="background:rgba(254,242,242,0.92)!important;color:#b91c1c !important;border:1px solid #dc2626 !important;"';
+    }
+    
+    tbody.innerHTML += `<tr${highlight}>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${row.date ? row.date.substring(0,10) : ''}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(row.capturedSaleAmount||0)}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(row.cashAmount||0)}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(row.visaAmount||0)}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(row.doordashAmount||0)}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(row.grubhubAmount||0)}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(row.ubereatsAmount||0)}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(row.onlineAmount||0)}</td>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${row.storeName||''}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(row.expenseAmount||0)}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(saleAmount)}</td>
+    </tr>`;
+  });
+  
+  tbody.innerHTML += `<tr style="background-color: #fef3c7; font-weight: bold;">
+    <td style="padding: 12px 14px; text-align: left;">TOTAL</td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalCaptured)}</td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalCash)}</td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalVisa)}</td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalDoordash)}</td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalGrubhub)}</td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalUber)}</td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalOnline)}</td>
+    <td style="padding: 12px 14px; text-align: left;"></td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalExpense)}</td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalSale)}</td>
+  </tr>`;
+  
+  summaryDiv.innerHTML = `
+    <div style="background:#f0f9ff;padding:12px;border-radius:8px;border-left:4px solid #2563eb;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Total Captured</div>
+      <div style="font-size:20px;font-weight:bold;color:#2563eb;">${fmt(totalCaptured)}</div>
+    </div>
+    <div style="background:#f0fdf4;padding:12px;border-radius:8px;border-left:4px solid #22c55e;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Total Sale</div>
+      <div style="font-size:20px;font-weight:bold;color:#22c55e;">${fmt(totalSale)}</div>
+    </div>
+    <div style="background:#fef3c7;padding:12px;border-radius:8px;border-left:4px solid #f59e42;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Total Cash</div>
+      <div style="font-size:20px;font-weight:bold;color:#f59e42;">${fmt(totalCash)}</div>
+    </div>
+    <div style="background:#fce7f3;padding:12px;border-radius:8px;border-left:4px solid #ec4899;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Total Expense</div>
+      <div style="font-size:20px;font-weight:bold;color:#ec4899;">${fmt(totalExpense)}</div>
+    </div>
+    <div style="background:#f3e8ff;padding:12px;border-radius:8px;border-left:4px solid #9333ea;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Transaction Count</div>
+      <div style="font-size:20px;font-weight:bold;color:#9333ea;">${weekData.rows.length}</div>
+    </div>
+  `;
+}
+
+function onDashboardWeekChange() {
+  const dropdown = document.getElementById('dashboardWeekSelector');
+  if (dropdown && dropdown.value) {
+    displayDashboardWeekSalesDetails(dropdown.value);
   }
 }
 
+function exportDashboardWeekToPDF() {
+  alert('PDF export functionality coming soon');
+}
+
+function exportDashboardWeekToExcel() {
+  alert('Excel export functionality coming soon');
+}
 // Restore restaurant selection from URL parameter if present
 function restoreRestaurantFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -239,20 +459,65 @@ function restoreRestaurantFromURL() {
   }
 }
 
+// Override switchTab to handle salesDashboard tab
+function setupSwitchTabOverride() {
+  if (typeof window.switchTab === 'function') {
+    const appSwitchTab = window.switchTab;
+    window.switchTab = function(tabName) {
+      // Hide all tabs first
+      const allTabs = document.querySelectorAll('.tab-content');
+      allTabs.forEach(tab => tab.style.display = 'none');
+      
+      // Remove active class from all tab buttons
+      const allTabButtons = document.querySelectorAll('.tab-menu .tab');
+      allTabButtons.forEach(btn => btn.classList.remove('tab-active'));
+      
+      if (tabName === 'salesDashboard') {
+        // Handle Sales Dashboard tab manually
+        const dashboardContent = document.getElementById('tabContentSalesDashboard');
+        if (dashboardContent) {
+          dashboardContent.style.display = 'block';
+        }
+        
+        const dashboardButton = document.getElementById('tabSalesDashboard');
+        if (dashboardButton) {
+          dashboardButton.classList.add('tab-active');
+        }
+        
+        // Update tab slider
+        const slider = document.getElementById('tabSlider');
+        if (slider && dashboardButton) {
+          slider.style.left = dashboardButton.offsetLeft + 'px';
+          slider.style.width = dashboardButton.offsetWidth + 'px';
+        }
+        
+        // Load dashboard data when tab is clicked
+        loadDashboardData();
+      } else {
+        // For other tabs, use the original function to show their content and update slider
+        appSwitchTab(tabName);
+      }
+    };
+  } else {
+    // Retry if switchTab not yet defined
+    setTimeout(setupSwitchTabOverride, 100);
+  }
+}
+
+// Setup override when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupSwitchTabOverride);
+} else {
+  setupSwitchTabOverride();
+}
+
 // Call when page loads and when restaurant changes
 document.addEventListener('DOMContentLoaded', function() {
   // Wait for the restaurant selector to populate first
   setTimeout(function() {
     // Restore restaurant selection from URL after dropdown is populated
     restoreRestaurantFromURL();
-    // Then update the dashboard link
-    updateSalesDashboardLink();
   }, 1000);
-  
-  const restaurantSelect = document.getElementById('restaurantSelect');
-  if (restaurantSelect) {
-    restaurantSelect.addEventListener('change', updateSalesDashboardLink);
-  }
 });
 
 document.addEventListener('DOMContentLoaded', function() {
