@@ -171,5 +171,30 @@
       <button class="login-btn" type="submit" style="font-size:1.22rem; padding: 18px 0; border-radius: 18px;">Login</button>
     </form>
   </div>
+  <!-- Script to hide Don Ramon logo(s) without removing source files -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Hide images referencing Don Ramon in src or alt
+        document.querySelectorAll('img').forEach(img => {
+          const src = (img.getAttribute('src') || '').toLowerCase();
+          const alt = (img.getAttribute('alt') || '').toLowerCase();
+          if (src.includes('don') && src.includes('ramon') || alt.includes('don') && alt.includes('ramon') || src.includes('don-ramon') || src.includes('donramon')) {
+            img.style.display = 'none';
+          }
+        });
+
+        // Hide any element that contains the text "Don Ramon"
+        const textNodes = document.querySelectorAll('h1,h2,h3,h4,h5,span,div,a');
+        textNodes.forEach(n => {
+          if ((n.textContent || '').toLowerCase().includes('don ramon')) {
+            n.style.display = 'none';
+          }
+        });
+      } catch (e) {
+        console.warn('Error hiding Don Ramon logo:', e);
+      }
+    });
+  </script>
 </body>
 </html>

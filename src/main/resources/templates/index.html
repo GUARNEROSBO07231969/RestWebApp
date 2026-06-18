@@ -34,11 +34,12 @@
 
   <select id="restaurantSelect" class="restaurant-select" onchange="loadData()"></select>
 
-  <!-- Tab menu: only Sales and Supplier Expenses tabs -->
+  <!-- Tab menu: Sales, Supplier Expenses, Sales Dashboard, and Supplier Expenses Dashboard -->
   <ul class="tab-menu">
       <li id="tabSales" class="tab tab-active" onclick="switchTab('sales')"><span class="tab-icon">💰</span>Sales</li>
       <li id="tabSuppliers" class="tab" onclick="switchTab('suppliers')"><span class="tab-icon">📦</span>Supplier Expenses</li>
       <li id="tabSalesDashboard" class="tab" onclick="switchTab('salesDashboard')"><span class="tab-icon">📊</span>Sales Dashboard</li>
+      <li id="tabSupplierDashboard" class="tab" onclick="switchTab('supplierDashboard')"><span class="tab-icon">�</span>Supplier Expenses Dashboard</li>
       <div class="tab-slider" id="tabSlider"></div>
     </ul>
   <!-- Only Sales and Supplier Expenses tab content sections -->
@@ -246,12 +247,106 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+  <div id="tabContentSupplierDashboard" class="tab-content" style="display:none;">
+    <div style="margin-bottom: 20px;">
+      <p style="font-size: 14px; color: #666; margin-bottom: 20px;">� View detailed supplier expenses breakdown by period with comprehensive metrics</p>
+    </div>
+    
+    <div class="controls" style="display: flex; gap: 15px; margin-bottom: 30px; align-items: center; flex-wrap: wrap;">
+      <div class="control-group" style="display: flex; align-items: center; gap: 10px;">
+        <label for="supplierDashboardPeriodSelector" style="font-weight: 600; color: #334155; font-size: 14px;">Select Period:</label>
+        <select id="supplierDashboardPeriodSelector" onchange="onSupplierDashboardPeriodChange()" style="padding: 10px 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; transition: all 0.3s; min-width: 250px;">
+          <option value="">Loading periods...</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="exportSupplierDashboardToPDF()" style="padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">🖨️ Print PDF</button>
+        <button class="btn btn-secondary" onclick="exportSupplierDashboardToExcel()" style="padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">📋 Print Excel</button>
+      </div>
+    </div>
+    
+    <div id="supplierDashboardSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px;">
+      <!-- Summary cards populated by JavaScript -->
+    </div>
+    
+    <div style="overflow-x: auto; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead style="background: #f1f5f9; border-bottom: 2px solid #e2e8f0;">
+          <tr>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Date</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Supplier Name</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">Invoice Amount</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Invoice Number</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Check Number</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Notes</th>
+          </tr>
+        </thead>
+        <tbody id="supplierDashboardTableBody" style="font-size: 14px;">
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+              <div style="font-size: 48px; margin-bottom: 15px;">📦</div>
+              <div>Select a period to view supplier expenses details</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+    
+    <div class="controls" style="display: flex; gap: 15px; margin-bottom: 30px; align-items: center; flex-wrap: wrap;">
+      <div class="control-group" style="display: flex; align-items: center; gap: 10px;">
+        <label for="supplierDashboardPeriodSelector" style="font-weight: 600; color: #334155; font-size: 14px;">Select Period:</label>
+        <select id="supplierDashboardPeriodSelector" onchange="onSupplierDashboardPeriodChange()" style="padding: 10px 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; transition: all 0.3s; min-width: 250px;">
+          <option value="">Loading periods...</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="exportSupplierDashboardToPDF()" style="padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">🖨️ Print PDF</button>
+        <button class="btn btn-secondary" onclick="exportSupplierDashboardToExcel()" style="padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">📋 Print Excel</button>
+      </div>
+    </div>
+    
+    <div id="supplierDashboardSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px;">
+      <!-- Summary cards populated by JavaScript -->
+    </div>
+    
+    <div style="overflow-x: auto; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead style="background: #f1f5f9; border-bottom: 2px solid #e2e8f0;">
+          <tr>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Date</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Supplier Name</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">Invoice Amount</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Invoice Number</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Check Number</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Notes</th>
+          </tr>
+        </thead>
+        <tbody id="supplierDashboardTableBody" style="font-size: 14px;">
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+              <div style="font-size: 48px; margin-bottom: 15px;">📦</div>
+              <div>Select a period to view supplier expenses details</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/js/app.js"></script>
   <script>
 // Sales Dashboard data and functions
 let dashboardWeekData = {};
+
+// Function to update tab slider position
+function updateTabSlider(tabElement) {
+  const slider = document.getElementById('tabSlider');
+  if (slider && tabElement) {
+    slider.style.left = tabElement.offsetLeft + 'px';
+    slider.style.width = tabElement.offsetWidth + 'px';
+  }
+}
 
 function loadDashboardData() {
   const restaurantSelect = document.getElementById('restaurantSelect');
@@ -914,6 +1009,175 @@ function clearSupplierForm() {
     dateInput.value = `${yyyy}-${mm}-${dd}`;
   }
 }
+
+// Supplier Dashboard Functions
+let supplierDashboardData = {};
+
+function loadSupplierDashboardData() {
+  const restaurantSelect = document.getElementById('restaurantSelect');
+  if (!restaurantSelect || !restaurantSelect.value) {
+    console.warn('loadSupplierDashboardData: No restaurant selected');
+    return;
+  }
+  
+  console.log('loadSupplierDashboardData: Starting load for restaurant:', restaurantSelect.value);
+  const restaurantId = restaurantSelect.value;
+  
+  fetch(`/api/suppliers?restaurantId=${restaurantId}`)
+    .then(response => {
+      console.log('loadSupplierDashboardData: Response status:', response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(suppliersData => {
+      console.log('loadSupplierDashboardData: Received suppliers data, count:', suppliersData.length);
+      if (!Array.isArray(suppliersData)) {
+        console.error('loadSupplierDashboardData: Suppliers data is not an array:', suppliersData);
+        return;
+      }
+      groupSupplierDashboardDataByPeriod(suppliersData);
+      populateSupplierDashboardPeriodDropdown();
+      const sortedPeriods = Object.keys(supplierDashboardData).sort().reverse();
+      console.log('loadSupplierDashboardData: Periods available:', sortedPeriods);
+      if (sortedPeriods.length > 0) {
+        document.getElementById('supplierDashboardPeriodSelector').value = sortedPeriods[0];
+        displaySupplierDashboardDetails(sortedPeriods[0]);
+      } else {
+        console.warn('loadSupplierDashboardData: No periods found in data');
+      }
+    })
+    .catch(error => console.error('loadSupplierDashboardData: Error loading supplier dashboard data:', error));
+}
+
+function groupSupplierDashboardDataByPeriod(suppliersData) {
+  supplierDashboardData = {};
+  
+  suppliersData.forEach(row => {
+    if (!row.transactionDate) return;
+    
+    const dateStr = row.transactionDate.substring(0, 10);
+    const date = new Date(dateStr + 'T00:00:00');
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    
+    const monthYear = `${year}-${String(month).padStart(2, '0')}`;
+    const periodLabel = `${monthYear} - Month`;
+    
+    if (!supplierDashboardData[monthYear]) {
+      supplierDashboardData[monthYear] = {
+        label: periodLabel,
+        monthYear,
+        rows: []
+      };
+    }
+    
+    supplierDashboardData[monthYear].rows.push(row);
+  });
+}
+
+function populateSupplierDashboardPeriodDropdown() {
+  const dropdown = document.getElementById('supplierDashboardPeriodSelector');
+  if (!dropdown) return;
+  
+  dropdown.innerHTML = '';
+  const sortedPeriods = Object.keys(supplierDashboardData).sort().reverse();
+  
+  if (sortedPeriods.length === 0) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'No supplier data available';
+    dropdown.appendChild(option);
+    return;
+  }
+  
+  sortedPeriods.forEach(periodKey => {
+    const option = document.createElement('option');
+    option.value = periodKey;
+    option.textContent = supplierDashboardData[periodKey].label + ` (${supplierDashboardData[periodKey].rows.length} invoices)`;
+    dropdown.appendChild(option);
+  });
+}
+
+function displaySupplierDashboardDetails(periodKey) {
+  const fmt = (v) => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  
+  const periodData = supplierDashboardData[periodKey];
+  if (!periodData) return;
+  
+  const tbody = document.getElementById('supplierDashboardTableBody');
+  const summaryDiv = document.getElementById('supplierDashboardSummary');
+  
+  if (!tbody || !summaryDiv) return;
+  
+  tbody.innerHTML = '';
+  
+  let totalInvoices = 0;
+  
+  periodData.rows.forEach(row => {
+    totalInvoices += row.invoiceAmount || 0;
+    
+    tbody.innerHTML += `<tr>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${row.transactionDate ? row.transactionDate.substring(0,10) : ''}</td>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${row.supplierName || ''}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(row.invoiceAmount||0)}</td>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${row.invoiceNumber || ''}</td>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${row.checkNumber || ''}</td>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${row.notes || ''}</td>
+    </tr>`;
+  });
+  
+  tbody.innerHTML += `<tr style="background-color: #fef3c7; font-weight: bold;">
+    <td style="padding: 12px 14px; text-align: left;">TOTAL</td>
+    <td style="padding: 12px 14px; text-align: left;"></td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalInvoices)}</td>
+    <td style="padding: 12px 14px; text-align: left;"></td>
+    <td style="padding: 12px 14px; text-align: left;"></td>
+    <td style="padding: 12px 14px; text-align: left;"></td>
+  </tr>`;
+  
+  summaryDiv.innerHTML = `
+    <div style="background:#f0f9ff;padding:12px;border-radius:8px;border-left:4px solid #2563eb;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Total Invoices</div>
+      <div style="font-size:20px;font-weight:bold;color:#2563eb;">${fmt(totalInvoices)}</div>
+    </div>
+    <div style="background:#f0fdf4;padding:12px;border-radius:8px;border-left:4px solid #22c55e;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Invoice Count</div>
+      <div style="font-size:20px;font-weight:bold;color:#22c55e;">${periodData.rows.length}</div>
+    </div>
+  `;
+}
+
+function onSupplierDashboardPeriodChange() {
+  const dropdown = document.getElementById('supplierDashboardPeriodSelector');
+  if (dropdown && dropdown.value) {
+    displaySupplierDashboardDetails(dropdown.value);
+  }
+}
+
+function exportSupplierDashboardToPDF() {
+  alert('Supplier Dashboard PDF export coming soon');
+}
+
+function exportSupplierDashboardToExcel() {
+  alert('Supplier Dashboard Excel export coming soon');
+}
+
+// Setup tab slider updates when tabs are switched
+document.addEventListener('DOMContentLoaded', function() {
+  // Update slider on tab click for all tabs
+  const allTabs = document.querySelectorAll('.tab-menu .tab');
+  allTabs.forEach(tab => {
+    const originalOnclick = tab.getAttribute('onclick');
+    tab.addEventListener('click', function() {
+      // Call updateTabSlider after a small delay to ensure tab is active
+      setTimeout(() => {
+        updateTabSlider(tab);
+      }, 50);
+    });
+  });
+});
 </script>
 </body>
 </html>
