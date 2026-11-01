@@ -34,7 +34,7 @@
 
   <select id="restaurantSelect" class="restaurant-select" onchange="loadData()"></select>
 
-  <!-- Tab menu: only Sales and Supplier Expenses tabs -->
+  <!-- Tab menu: Sales, Supplier Expenses, and Sales Dashboard -->
   <ul class="tab-menu">
       <li id="tabSales" class="tab tab-active" onclick="switchTab('sales')"><span class="tab-icon">💰</span>Sales</li>
       <li id="tabSuppliers" class="tab" onclick="switchTab('suppliers')"><span class="tab-icon">📦</span>Supplier Expenses</li>
@@ -245,13 +245,20 @@
       </table>
     </div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/js/app.js"></script>
   <script>
 // Sales Dashboard data and functions
 let dashboardWeekData = {};
+
+// Function to update tab slider position
+function updateTabSlider(tabElement) {
+  const slider = document.getElementById('tabSlider');
+  if (slider && tabElement) {
+    slider.style.left = tabElement.offsetLeft + 'px';
+    slider.style.width = tabElement.offsetWidth + 'px';
+  }
+}
 
 function loadDashboardData() {
   const restaurantSelect = document.getElementById('restaurantSelect');
@@ -914,6 +921,21 @@ function clearSupplierForm() {
     dateInput.value = `${yyyy}-${mm}-${dd}`;
   }
 }
+
+// Setup tab slider updates when tabs are switched
+document.addEventListener('DOMContentLoaded', function() {
+  // Update slider on tab click for all tabs
+  const allTabs = document.querySelectorAll('.tab-menu .tab');
+  allTabs.forEach(tab => {
+    const originalOnclick = tab.getAttribute('onclick');
+    tab.addEventListener('click', function() {
+      // Call updateTabSlider after a small delay to ensure tab is active
+      setTimeout(() => {
+        updateTabSlider(tab);
+      }, 50);
+    });
+  });
+});
 </script>
 </body>
 </html>
