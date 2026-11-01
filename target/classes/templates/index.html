@@ -10,6 +10,7 @@
 <body>
   <div id="printReportTitle"></div>
   <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
     <h2 style="
       background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);
       color: #fff;
@@ -19,11 +20,13 @@
       font-weight: 800;
       letter-spacing: 0.01em;
       text-shadow: 0 2px 8px #2563eb44, 0 1px 1px #2222;
-      margin-bottom: 10px;
+      margin: 0;
       font-size: 1.26rem;
       display: inline-block;
       transition: box-shadow 0.3s, background 0.3s;
     ">Restaurant Sales and Expenses</h2>
+    <img src="/images/favicon.png" alt="Restaurant logo" width="44" height="44" style="width:44px;height:44px;flex:0 0 44px;object-fit:contain;border-radius:50%;box-shadow:0 2px 8px rgba(30,41,59,0.25);">
+    </div>
     <div class="theme-toggle">
       <label class="switch">
         <input type="checkbox" id="themeToggle" onchange="toggleTheme(this)">
