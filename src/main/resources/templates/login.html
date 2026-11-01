@@ -38,6 +38,7 @@
       font-weight: 800;
       margin-bottom: 22px;
       color: #2563eb;
+      text-align: center;
       letter-spacing: -1px;
       text-shadow: 0 2px 8px #e0e7ef;
     }
@@ -134,6 +135,19 @@
       margin-bottom: 0;
       text-align: center;
     }
+    .login-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .login-brand img {
+      width: 150px;
+      height: 150px;
+      object-fit: contain;
+      border-radius: 50%;
+      box-shadow: 0 6px 20px rgba(30,41,59,0.18);
+    }
     .login-form-container {
       background: rgba(255,255,255,0.92);
       border-radius: 16px;
@@ -146,11 +160,8 @@
 </head>
 <body>
   <div class="login-form-container">
-    <div class="login-logo">
-      <span>🔒</span>
-    </div>
-    <div style="text-align:center;margin-bottom:24px;">
-      <img src="/static/images/donramon.png" alt="Don Ramon Logo" style="max-width:180px;width:100%;height:auto;display:inline-block;" />
+    <div class="login-brand">
+      <img src="/images/logo.png" alt="Restaurant logo">
     </div>
     <div class="login-title">Sign In</div>
     <form class="login-form" method="post" action="/login" autocomplete="on" style="gap: 28px;">
@@ -172,30 +183,5 @@
       <button class="login-btn" type="submit" style="font-size:1.22rem; padding: 18px 0; border-radius: 18px;">Login</button>
     </form>
   </div>
-  <!-- Script to hide Don Ramon logo(s) without removing source files -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      try {
-        // Hide images referencing Don Ramon in src or alt
-        document.querySelectorAll('img').forEach(img => {
-          const src = (img.getAttribute('src') || '').toLowerCase();
-          const alt = (img.getAttribute('alt') || '').toLowerCase();
-          if (src.includes('don') && src.includes('ramon') || alt.includes('don') && alt.includes('ramon') || src.includes('don-ramon') || src.includes('donramon')) {
-            img.style.display = 'none';
-          }
-        });
-
-        // Hide any element that contains the text "Don Ramon"
-        const textNodes = document.querySelectorAll('h1,h2,h3,h4,h5,span,div,a');
-        textNodes.forEach(n => {
-          if ((n.textContent || '').toLowerCase().includes('don ramon')) {
-            n.style.display = 'none';
-          }
-        });
-      } catch (e) {
-        console.warn('Error hiding Don Ramon logo:', e);
-      }
-    });
-  </script>
 </body>
 </html>
