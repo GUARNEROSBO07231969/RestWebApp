@@ -54,6 +54,9 @@ let currentPage = 1, pageSize = 10, allData = [], filteredData = [];
 
 async function loadData(){
   const id=document.getElementById('restaurantSelect').value;
+  const selSel=document.getElementById('restaurantSelect');
+  const nameEl=document.getElementById('titleRestaurantName');
+  if(nameEl&&selSel.selectedIndex>=0) nameEl.textContent=selSel.options[selSel.selectedIndex].text;
   allData = await fetch('/api/sales?restaurantId='+id).then(r=>r.json());
   filteredData = allData.slice();
   currentPage = 1;
