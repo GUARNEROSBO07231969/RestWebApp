@@ -85,7 +85,15 @@ async function loadRestaurants(){
 
 let currentPage = 1, pageSize = 15, allData = [], filteredData = [];
 
+function updatePageTitle() {
+  const sel = document.getElementById('restaurantSelect');
+  const el = document.getElementById('pageTitleText');
+  const name = sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text.trim() : '';
+  if (el) el.textContent = name ? `${name} - Restaurant Sales and Expenses` : 'Restaurant Sales and Expenses';
+}
+
 async function loadData(keepPage) {
+  updatePageTitle();
   const id=document.getElementById('restaurantSelect').value;
   allData = await fetch('/api/sales?restaurantId='+id).then(r=>r.json());
   // Sort by date/time descending on initial load only
