@@ -787,19 +787,49 @@ function loadSupplierDashboardData() {
       return response.json();
     })
     .then(suppliersData => {
-      groupSupplierDashboardByWeek(Array.isArray(suppliersData) ? suppliersData : []);
-      populateSupplierDashboardWeekDropdown();
-      const sortedWeeks = getSortedSupplierDashboardWeeks();
-      if (sortedWeeks.length > 0) {
-        document.getElementById('supplierDashboardWeekSelector').value = sortedWeeks[0];
-        displaySupplierDashboardWeekDetails(sortedWeeks[0]);
-      }
+      return fetch(`/api/sales?restaurantId=${restaurantSelect.value}`)
+        .then(r => r.ok ? r.json() : [])
+        .catch(() => [])
+        .then(salesData => {
+          groupSupplierDashboardByWeek(Array.isArray(suppliersData) ? suppliersData : [], Array.isArray(salesData) ? salesData : []);
+          populateSupplierDashboardWeekDropdown();
+          const sortedWeeks = getSortedSupplierDashboardWeeks();
+          // Default to the newest week that has invoices
+          const initial = sortedWeeks.find(k => supplierDashboardWeekData[k].rows.length > 0) || sortedWeeks[0];
+          if (initial) {
+            document.getElementById('supplierDashboardWeekSelector').value = initial;
+            displaySupplierDashboardWeekDetails(initial);
+          }
+        });
     })
     .catch(error => console.error('Error loading supplier dashboard data:', error));
 }
 
-function groupSupplierDashboardByWeek(suppliersData) {
+function groupSupplierDashboardByWeek(suppliersData, salesData) {
   supplierDashboardWeekData = {};
+
+  // Month range spans both supplier and sales dates so every month shows Weeks 1-4
+  let minIdx = null, maxIdx = null;
+  const trackMonth = (dateStr) => {
+    if (!dateStr) return;
+    const idx = parseInt(dateStr.substring(0, 4), 10) * 12 + (parseInt(dateStr.substring(5, 7), 10) - 1);
+    if (isNaN(idx)) return;
+    if (minIdx === null || idx < minIdx) minIdx = idx;
+    if (maxIdx === null || idx > maxIdx) maxIdx = idx;
+  };
+  suppliersData.forEach(r => trackMonth(r.transactionDate));
+  (salesData || []).forEach(r => trackMonth(r.date));
+
+  if (minIdx !== null) {
+    for (let idx = minIdx; idx <= maxIdx; idx++) {
+      const y = Math.floor(idx / 12);
+      const m = (idx % 12) + 1;
+      const monthYear = `${y}-${String(m).padStart(2, '0')}`;
+      for (let week = 1; week <= 4; week++) {
+        supplierDashboardWeekData[`${monthYear}-W${week}`] = { label: `${monthYear} - Week ${week}`, monthYear, week, rows: [] };
+      }
+    }
+  }
 
   suppliersData.forEach(row => {
     if (!row.transactionDate) return;
