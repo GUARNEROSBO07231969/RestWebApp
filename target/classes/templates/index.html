@@ -444,7 +444,7 @@ function displayDashboardWeekSalesDetails(weekKey) {
     totalCaptured += row.capturedSaleAmount || 0;
     
     let highlight = '';
-    if ((row.capturedSaleAmount||0) <= saleAmount - 200) {
+    if (Math.abs(saleAmount - (row.capturedSaleAmount||0)) >= 200) {
       highlight = ' style="background:rgba(254,242,242,0.92)!important;color:#b91c1c !important;border:1px solid #dc2626 !important;"';
     }
     
@@ -547,7 +547,7 @@ function exportDashboardWeekToPDF() {
     const saleAmount = (row.cashAmount||0) + (row.visaAmount||0) + (row.doordashAmount||0) + 
                       (row.grubhubAmount||0) + (row.ubereatsAmount||0) + (row.onlineAmount||0) + (row.expenseAmount||0);
     let rowStyle = '';
-    if ((row.capturedSaleAmount||0) <= saleAmount - 200) {
+    if (Math.abs(saleAmount - (row.capturedSaleAmount||0)) >= 200) {
       rowStyle = 'style="background-color: #fee2e2; color: #991b1b;"';
     }
     tableRows += `
