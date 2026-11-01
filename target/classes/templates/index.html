@@ -781,9 +781,23 @@ function escapeDashboardHtml(v) {
   return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function clearSupplierDashboardDisplay() {
+  const tbody = document.getElementById('supplierDashboardWeekTableBody');
+  const summaryDiv = document.getElementById('supplierDashboardWeekSummary');
+  if (tbody) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;"><div style="font-size: 48px; margin-bottom: 15px;">📦</div><div>No supplier expense data available</div></td></tr>`;
+  }
+  if (summaryDiv) summaryDiv.innerHTML = '';
+}
+
 function loadSupplierDashboardData() {
   const restaurantSelect = document.getElementById('restaurantSelect');
-  if (!restaurantSelect || !restaurantSelect.value) return;
+  if (!restaurantSelect || !restaurantSelect.value) {
+    groupSupplierDashboardByWeek([]);
+    populateSupplierDashboardWeekDropdown();
+    clearSupplierDashboardDisplay();
+    return;
+  }
 
   fetch(`/api/suppliers?restaurantId=${restaurantSelect.value}`)
     .then(response => {
@@ -797,9 +811,16 @@ function loadSupplierDashboardData() {
       if (sortedWeeks.length > 0) {
         document.getElementById('supplierDashboardWeekSelector').value = sortedWeeks[0];
         displaySupplierDashboardWeekDetails(sortedWeeks[0]);
+      } else {
+        clearSupplierDashboardDisplay();
       }
     })
-    .catch(error => console.error('Error loading supplier dashboard data:', error));
+    .catch(error => {
+      console.error('Error loading supplier dashboard data:', error);
+      groupSupplierDashboardByWeek([]);
+      populateSupplierDashboardWeekDropdown();
+      clearSupplierDashboardDisplay();
+    });
 }
 
 function groupSupplierDashboardByWeek(suppliersData) {
@@ -916,6 +937,8 @@ function onSupplierDashboardWeekChange() {
   const dropdown = document.getElementById('supplierDashboardWeekSelector');
   if (dropdown && dropdown.value) {
     displaySupplierDashboardWeekDetails(dropdown.value);
+  } else {
+    clearSupplierDashboardDisplay();
   }
 }
 
