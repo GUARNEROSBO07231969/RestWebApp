@@ -765,6 +765,14 @@ function exportDashboardWeekToExcel() {
 // Supplier Expenses Dashboard data and functions
 let supplierDashboardWeekData = {};
 
+function getSortedSupplierDashboardWeeks() {
+  return Object.keys(supplierDashboardWeekData).sort((a, b) => {
+    const [ay, am] = supplierDashboardWeekData[a].monthYear.split('-').map(Number);
+    const [by, bm] = supplierDashboardWeekData[b].monthYear.split('-').map(Number);
+    return (by - ay) || (bm - am) || (supplierDashboardWeekData[b].week - supplierDashboardWeekData[a].week);
+  });
+}
+
 function escapeDashboardHtml(v) {
   return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -781,7 +789,7 @@ function loadSupplierDashboardData() {
     .then(suppliersData => {
       groupSupplierDashboardByWeek(Array.isArray(suppliersData) ? suppliersData : []);
       populateSupplierDashboardWeekDropdown();
-      const sortedWeeks = Object.keys(supplierDashboardWeekData).sort().reverse();
+      const sortedWeeks = getSortedSupplierDashboardWeeks();
       if (sortedWeeks.length > 0) {
         document.getElementById('supplierDashboardWeekSelector').value = sortedWeeks[0];
         displaySupplierDashboardWeekDetails(sortedWeeks[0]);
@@ -824,7 +832,7 @@ function populateSupplierDashboardWeekDropdown() {
   if (!dropdown) return;
 
   dropdown.innerHTML = '';
-  const sortedWeeks = Object.keys(supplierDashboardWeekData).sort().reverse();
+  const sortedWeeks = getSortedSupplierDashboardWeeks();
 
   if (sortedWeeks.length === 0) {
     const option = document.createElement('option');
