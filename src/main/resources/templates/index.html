@@ -34,11 +34,12 @@
 
   <select id="restaurantSelect" class="restaurant-select" onchange="loadData()"></select>
 
-  <!-- Tab menu: Sales, Supplier Expenses, and Sales Dashboard -->
+  <!-- Tab menu: Sales, Supplier Expenses, Sales Dashboard, and Supplier Expenses Dashboard -->
   <ul class="tab-menu">
       <li id="tabSales" class="tab tab-active" onclick="switchTab('sales')"><span class="tab-icon">💰</span>Sales</li>
       <li id="tabSuppliers" class="tab" onclick="switchTab('suppliers')"><span class="tab-icon">📦</span>Supplier Expenses</li>
       <li id="tabSalesDashboard" class="tab" onclick="switchTab('salesDashboard')"><span class="tab-icon">📊</span>Sales Dashboard</li>
+      <li id="tabSupplierDashboard" class="tab" onclick="switchTab('supplierDashboard')"><span class="tab-icon">🧾</span>Supplier Expenses Dashboard</li>
       <div class="tab-slider" id="tabSlider"></div>
     </ul>
   <!-- Only Sales and Supplier Expenses tab content sections -->
@@ -239,6 +240,51 @@
             <td colspan="11" style="text-align: center; padding: 40px; color: #94a3b8;">
               <div style="font-size: 48px; margin-bottom: 15px;">📈</div>
               <div>Select a week to view sales details</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div id="tabContentSupplierDashboard" class="tab-content" style="display:none;">
+    <div style="margin-bottom: 20px;">
+      <p style="font-size: 14px; color: #666; margin-bottom: 20px;">🧾 View detailed supplier expenses breakdown by week with comprehensive metrics</p>
+    </div>
+
+    <div class="controls" style="display: flex; gap: 15px; margin-bottom: 30px; align-items: center; flex-wrap: wrap;">
+      <div class="control-group" style="display: flex; align-items: center; gap: 10px;">
+        <label for="supplierDashboardWeekSelector" style="font-weight: 600; color: #334155; font-size: 14px;">Select Week:</label>
+        <select id="supplierDashboardWeekSelector" onchange="onSupplierDashboardWeekChange()" style="padding: 10px 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; transition: all 0.3s; min-width: 250px;">
+          <option value="">Loading weeks...</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="exportSupplierDashboardWeekToPDF()" style="padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">🖨️ Print PDF</button>
+        <button class="btn btn-secondary" onclick="exportSupplierDashboardWeekToExcel()" style="padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">📋 Print Excel</button>
+      </div>
+    </div>
+
+    <div id="supplierDashboardWeekSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px;">
+      <!-- Summary cards populated by JavaScript -->
+    </div>
+
+    <div style="overflow-x: auto; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead style="background: #f1f5f9; border-bottom: 2px solid #e2e8f0;">
+          <tr>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Supplier Name</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Transaction Date</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Invoice Number</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Check Number</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; color: #334155; white-space: nowrap;">Invoice Amount</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap;">Notes</th>
+          </tr>
+        </thead>
+        <tbody id="supplierDashboardWeekTableBody" style="font-size: 14px;">
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+              <div style="font-size: 48px; margin-bottom: 15px;">📦</div>
+              <div>Select a week to view supplier expense details</div>
             </td>
           </tr>
         </tbody>
@@ -715,6 +761,298 @@ function exportDashboardWeekToExcel() {
   link.click();
   document.body.removeChild(link);
 }
+
+// Supplier Expenses Dashboard data and functions
+let supplierDashboardWeekData = {};
+
+function escapeDashboardHtml(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function loadSupplierDashboardData() {
+  const restaurantSelect = document.getElementById('restaurantSelect');
+  if (!restaurantSelect || !restaurantSelect.value) return;
+
+  fetch(`/api/suppliers?restaurantId=${restaurantSelect.value}`)
+    .then(response => {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.json();
+    })
+    .then(suppliersData => {
+      groupSupplierDashboardByWeek(Array.isArray(suppliersData) ? suppliersData : []);
+      populateSupplierDashboardWeekDropdown();
+      const sortedWeeks = Object.keys(supplierDashboardWeekData).sort().reverse();
+      if (sortedWeeks.length > 0) {
+        document.getElementById('supplierDashboardWeekSelector').value = sortedWeeks[0];
+        displaySupplierDashboardWeekDetails(sortedWeeks[0]);
+      }
+    })
+    .catch(error => console.error('Error loading supplier dashboard data:', error));
+}
+
+function groupSupplierDashboardByWeek(suppliersData) {
+  supplierDashboardWeekData = {};
+
+  suppliersData.forEach(row => {
+    if (!row.transactionDate) return;
+
+    const date = new Date(row.transactionDate.substring(0, 10) + 'T00:00:00');
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const day = date.getDate();
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    // Same week boundaries as the Sales Dashboard
+    let week;
+    if (day <= 7) week = 1;
+    else if (day <= (daysInMonth === 31 ? 15 : 14)) week = 2;
+    else if (day <= (daysInMonth === 31 ? 23 : daysInMonth === 30 ? 22 : 21)) week = 3;
+    else week = 4;
+
+    const monthYear = `${year}-${String(month).padStart(2, '0')}`;
+    const weekKey = `${monthYear}-W${week}`;
+
+    if (!supplierDashboardWeekData[weekKey]) {
+      supplierDashboardWeekData[weekKey] = { label: `${monthYear} - Week ${week}`, monthYear, week, rows: [] };
+    }
+    supplierDashboardWeekData[weekKey].rows.push(row);
+  });
+}
+
+function populateSupplierDashboardWeekDropdown() {
+  const dropdown = document.getElementById('supplierDashboardWeekSelector');
+  if (!dropdown) return;
+
+  dropdown.innerHTML = '';
+  const sortedWeeks = Object.keys(supplierDashboardWeekData).sort().reverse();
+
+  if (sortedWeeks.length === 0) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'No supplier data available';
+    dropdown.appendChild(option);
+    return;
+  }
+
+  sortedWeeks.forEach(weekKey => {
+    const option = document.createElement('option');
+    option.value = weekKey;
+    option.textContent = supplierDashboardWeekData[weekKey].label + ` (${supplierDashboardWeekData[weekKey].rows.length} invoices)`;
+    dropdown.appendChild(option);
+  });
+}
+
+function displaySupplierDashboardWeekDetails(weekKey) {
+  const fmt = (v) => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  const weekData = supplierDashboardWeekData[weekKey];
+  if (!weekData) return;
+
+  const tbody = document.getElementById('supplierDashboardWeekTableBody');
+  const summaryDiv = document.getElementById('supplierDashboardWeekSummary');
+  if (!tbody || !summaryDiv) return;
+
+  let totalInvoices = 0;
+  const suppliers = new Set();
+  let rowsHtml = '';
+
+  weekData.rows.forEach(row => {
+    totalInvoices += row.invoiceAmount || 0;
+    if (row.supplierName) suppliers.add(row.supplierName);
+    rowsHtml += `<tr>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${escapeDashboardHtml(row.supplierName)}</td>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${row.transactionDate ? row.transactionDate.substring(0,10) : ''}</td>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${escapeDashboardHtml(row.invoiceNumber)}</td>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${escapeDashboardHtml(row.checkNumber)}</td>
+      <td style="padding: 12px 14px; text-align: right; border-bottom: 1px solid #e2e8f0;">${fmt(row.invoiceAmount||0)}</td>
+      <td style="padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0;">${escapeDashboardHtml(row.notes)}</td>
+    </tr>`;
+  });
+
+  rowsHtml += `<tr style="background-color: #fef3c7; font-weight: bold;">
+    <td style="padding: 12px 14px; text-align: left;">TOTAL</td>
+    <td style="padding: 12px 14px;"></td>
+    <td style="padding: 12px 14px;"></td>
+    <td style="padding: 12px 14px;"></td>
+    <td style="padding: 12px 14px; text-align: right;">${fmt(totalInvoices)}</td>
+    <td style="padding: 12px 14px;"></td>
+  </tr>`;
+  tbody.innerHTML = rowsHtml;
+
+  const avg = weekData.rows.length ? totalInvoices / weekData.rows.length : 0;
+  summaryDiv.innerHTML = `
+    <div style="background:#f0f9ff;padding:12px;border-radius:8px;border-left:4px solid #2563eb;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Total Invoices</div>
+      <div style="font-size:20px;font-weight:bold;color:#2563eb;">${fmt(totalInvoices)}</div>
+    </div>
+    <div style="background:#f0fdf4;padding:12px;border-radius:8px;border-left:4px solid #22c55e;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Average Invoice</div>
+      <div style="font-size:20px;font-weight:bold;color:#22c55e;">${fmt(avg)}</div>
+    </div>
+    <div style="background:#fef3c7;padding:12px;border-radius:8px;border-left:4px solid #f59e42;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Suppliers</div>
+      <div style="font-size:20px;font-weight:bold;color:#f59e42;">${suppliers.size}</div>
+    </div>
+    <div style="background:#f3e8ff;padding:12px;border-radius:8px;border-left:4px solid #9333ea;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">Invoice Count</div>
+      <div style="font-size:20px;font-weight:bold;color:#9333ea;">${weekData.rows.length}</div>
+    </div>
+  `;
+}
+
+function onSupplierDashboardWeekChange() {
+  const dropdown = document.getElementById('supplierDashboardWeekSelector');
+  if (dropdown && dropdown.value) {
+    displaySupplierDashboardWeekDetails(dropdown.value);
+  }
+}
+
+function exportSupplierDashboardWeekToPDF() {
+  const weekKey = document.getElementById('supplierDashboardWeekSelector').value;
+  if (!weekKey || !supplierDashboardWeekData[weekKey]) {
+    alert('Please select a week first');
+    return;
+  }
+
+  const weekData = supplierDashboardWeekData[weekKey];
+  const restaurantSelect = document.getElementById('restaurantSelect');
+  const restaurantName = restaurantSelect.options[restaurantSelect.selectedIndex]?.text || 'Restaurant';
+  const fmt = (v) => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  let totalInvoices = 0;
+  let tableRows = '';
+  weekData.rows.forEach(row => {
+    totalInvoices += row.invoiceAmount || 0;
+    tableRows += `
+      <tr>
+        <td>${escapeDashboardHtml(row.supplierName)}</td>
+        <td>${row.transactionDate ? row.transactionDate.substring(0,10) : ''}</td>
+        <td>${escapeDashboardHtml(row.invoiceNumber)}</td>
+        <td>${escapeDashboardHtml(row.checkNumber)}</td>
+        <td style="text-align: right;">${fmt(row.invoiceAmount||0)}</td>
+        <td>${escapeDashboardHtml(row.notes)}</td>
+      </tr>`;
+  });
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Supplier Expenses Dashboard - ${escapeDashboardHtml(weekData.label)}</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 20px; color: #1e293b; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { margin: 5px 0; color: #2563eb; font-size: 24px; }
+        .header p { margin: 5px 0; color: #64748b; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background-color: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+        .total-row { background-color: #fef3c7; font-weight: bold; }
+        @media print { body { margin: 0; } }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>🧾 Supplier Expenses Dashboard</h1>
+        <p><strong>${escapeDashboardHtml(restaurantName)}</strong></p>
+        <p>${escapeDashboardHtml(weekData.label)}</p>
+        <p>Report generated on ${new Date().toLocaleDateString()}</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Supplier Name</th>
+            <th>Transaction Date</th>
+            <th>Invoice Number</th>
+            <th>Check Number</th>
+            <th style="text-align: right;">Invoice Amount</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+          <tr class="total-row">
+            <td>TOTAL</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;">${fmt(totalInvoices)}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+
+  let printFrame = document.getElementById('supplierDashboardPrintFrame');
+  if (!printFrame) {
+    printFrame = document.createElement('iframe');
+    printFrame.id = 'supplierDashboardPrintFrame';
+    printFrame.style.display = 'none';
+    document.body.appendChild(printFrame);
+  }
+
+  const frameDoc = printFrame.contentDocument || printFrame.contentWindow.document;
+  frameDoc.open();
+  frameDoc.write(html);
+  frameDoc.close();
+
+  setTimeout(() => {
+    printFrame.contentWindow.print();
+  }, 250);
+}
+
+function exportSupplierDashboardWeekToExcel() {
+  const weekKey = document.getElementById('supplierDashboardWeekSelector').value;
+  if (!weekKey || !supplierDashboardWeekData[weekKey]) {
+    alert('Please select a week first');
+    return;
+  }
+
+  const weekData = supplierDashboardWeekData[weekKey];
+  const restaurantSelect = document.getElementById('restaurantSelect');
+  const restaurantName = restaurantSelect.options[restaurantSelect.selectedIndex]?.text || 'Restaurant';
+  const fmt = (v) => Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  const q = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+
+  let totalInvoices = 0;
+  weekData.rows.forEach(row => { totalInvoices += row.invoiceAmount || 0; });
+
+  let csv = 'Supplier Expenses Dashboard Report\n';
+  csv += `Restaurant,${q(restaurantName)}\n`;
+  csv += `Week,${weekData.label}\n`;
+  csv += `Report Generated,${new Date().toLocaleDateString()}\n\n`;
+
+  csv += 'Summary\n';
+  csv += `Total Invoices,${q('$' + fmt(totalInvoices))}\n`;
+  csv += `Invoice Count,${weekData.rows.length}\n\n`;
+
+  csv += 'Supplier Expense Details\n';
+  csv += 'Supplier Name,Transaction Date,Invoice Number,Check Number,Invoice Amount,Notes\n';
+
+  weekData.rows.forEach(row => {
+    csv += `${q(row.supplierName)},`;
+    csv += `${row.transactionDate ? row.transactionDate.substring(0,10) : ''},`;
+    csv += `${q(row.invoiceNumber)},`;
+    csv += `${q(row.checkNumber)},`;
+    csv += `${q('$' + fmt(row.invoiceAmount||0))},`;
+    csv += `${q(row.notes)}\n`;
+  });
+
+  csv += `\nTOTAL,,,,${q('$' + fmt(totalInvoices))},\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', `Supplier-Expenses-Dashboard-${weekData.label.replace(/\s+/g, '-')}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 // Restore restaurant selection from URL parameter if present
 function restoreRestaurantFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -774,6 +1112,24 @@ function setupSwitchTabOverride() {
         
         // Load dashboard data when tab is clicked
         loadDashboardData();
+      } else if (tabName === 'supplierDashboard') {
+        const supplierDashboardContent = document.getElementById('tabContentSupplierDashboard');
+        if (supplierDashboardContent) {
+          supplierDashboardContent.style.display = 'block';
+        }
+
+        const supplierDashboardButton = document.getElementById('tabSupplierDashboard');
+        if (supplierDashboardButton) {
+          supplierDashboardButton.classList.add('tab-active');
+        }
+
+        const slider = document.getElementById('tabSlider');
+        if (slider && supplierDashboardButton) {
+          slider.style.left = supplierDashboardButton.offsetLeft + 'px';
+          slider.style.width = supplierDashboardButton.offsetWidth + 'px';
+        }
+
+        loadSupplierDashboardData();
       } else {
         // For other tabs, use the original function to show their content and update slider
         appSwitchTab(tabName);
@@ -806,6 +1162,7 @@ document.addEventListener('DOMContentLoaded', function() {
     restaurantSelect.addEventListener('change', function() {
       // Reload dashboard data whenever restaurant changes (regardless of active tab)
       loadDashboardData();
+      loadSupplierDashboardData();
     });
   }
 });
