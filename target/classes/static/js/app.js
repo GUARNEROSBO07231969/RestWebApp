@@ -805,17 +805,17 @@ function renderSupplierTable() {
   }
   renderSupplierPagination(filtered.length);
   renderSupplierKpiAndGraphs(filtered);
-  renderSupplierNotesPie(filtered);
+  renderSupplierNotesGraph(filtered);
   updateSupplierSortIndicators();
 }
 
-// Pie of invoice amount share by Notes type (top 5, rest grouped as Other)
-function renderSupplierNotesPie(rows) {
-  const canvas = document.getElementById('supplierNotesPie');
+// Bar graph of invoice amount by Notes type (top 5, rest grouped as Other)
+function renderSupplierNotesGraph(rows) {
+  const canvas = document.getElementById('supplierNotesGraph');
   if (!canvas || typeof Chart === 'undefined') return;
-  if (window.supplierNotesPieChart) {
-    window.supplierNotesPieChart.destroy();
-    window.supplierNotesPieChart = null;
+  if (window.supplierNotesGraphChart) {
+    window.supplierNotesGraphChart.destroy();
+    window.supplierNotesGraphChart = null;
   }
   const totals = new Map();
   rows.forEach(row => {
@@ -833,14 +833,16 @@ function renderSupplierNotesPie(rows) {
   const sum = entries.reduce((s, e) => s + e.amount, 0);
   if (!sum) return;
   const pct = v => (v / sum * 100).toFixed(1);
-  window.supplierNotesPieChart = new Chart(canvas.getContext('2d'), {
-    type: 'pie',
+  const money = v => '$' + v.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  const textColor = getComputedStyle(document.body).color;
+  window.supplierNotesGraphChart = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
     data: {
-      labels: entries.map(e => `${e.label} (${pct(e.amount)}%)`),
+      labels: entries.map(e => e.label),
       datasets: [{
         data: entries.map(e => e.amount),
         backgroundColor: ['#2563eb', '#f97316', '#22c55e', '#a855f7', '#facc15', '#94a3b8'],
-        borderWidth: 1
+        borderRadius: 4
       }]
     },
     options: {
@@ -848,15 +850,16 @@ function renderSupplierNotesPie(rows) {
       maintainAspectRatio: false,
       layout: { padding: 0 },
       plugins: {
-        legend: {
-          position: 'right',
-          labels: { boxWidth: 8, boxHeight: 8, padding: 4, font: { size: 11 }, color: getComputedStyle(document.body).color }
-        },
+        legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx => `${entries[ctx.dataIndex].label}: $${ctx.parsed.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} (${pct(ctx.parsed)}%)`
+            label: ctx => `${money(ctx.parsed.y)} (${pct(ctx.parsed.y)}%)`
           }
         }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } },
+        y: { beginAtZero: true, ticks: { color: textColor, font: { size: 10 }, maxTicksLimit: 4 } }
       }
     }
   });
