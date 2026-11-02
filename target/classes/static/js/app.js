@@ -805,7 +805,61 @@ function renderSupplierTable() {
   }
   renderSupplierPagination(filtered.length);
   renderSupplierKpiAndGraphs(filtered);
+  renderSupplierNotesPie(filtered);
   updateSupplierSortIndicators();
+}
+
+// Pie of invoice amount share by Notes type (top 5, rest grouped as Other)
+function renderSupplierNotesPie(rows) {
+  const canvas = document.getElementById('supplierNotesPie');
+  if (!canvas || typeof Chart === 'undefined') return;
+  if (window.supplierNotesPieChart) {
+    window.supplierNotesPieChart.destroy();
+    window.supplierNotesPieChart = null;
+  }
+  const totals = new Map();
+  rows.forEach(row => {
+    const raw = (row.notes || '').trim();
+    const key = raw ? raw.toLowerCase() : '(no notes)';
+    const entry = totals.get(key) || { label: raw || '(No Notes)', amount: 0 };
+    entry.amount += Number(row.invoiceAmount) || 0;
+    totals.set(key, entry);
+  });
+  let entries = [...totals.values()].filter(e => e.amount > 0).sort((a, b) => b.amount - a.amount);
+  if (entries.length > 5) {
+    const other = entries.slice(5).reduce((s, e) => s + e.amount, 0);
+    entries = entries.slice(0, 5).concat({ label: 'Other', amount: other });
+  }
+  const sum = entries.reduce((s, e) => s + e.amount, 0);
+  if (!sum) return;
+  const pct = v => (v / sum * 100).toFixed(1);
+  window.supplierNotesPieChart = new Chart(canvas.getContext('2d'), {
+    type: 'pie',
+    data: {
+      labels: entries.map(e => `${e.label} (${pct(e.amount)}%)`),
+      datasets: [{
+        data: entries.map(e => e.amount),
+        backgroundColor: ['#2563eb', '#f97316', '#22c55e', '#a855f7', '#facc15', '#94a3b8'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: 0 },
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { boxWidth: 8, boxHeight: 8, padding: 4, font: { size: 11 }, color: getComputedStyle(document.body).color }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${entries[ctx.dataIndex].label}: $${ctx.parsed.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} (${pct(ctx.parsed)}%)`
+          }
+        }
+      }
+    }
+  });
 }
 
 function clearSupplierForm() {
