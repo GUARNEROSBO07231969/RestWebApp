@@ -314,6 +314,25 @@
       </div>
     </div>
 
+    <div class="filter-search-row" style="display:flex;align-items:center;gap:0;margin-bottom:16px;flex-wrap:wrap;">
+      <div class="search-row" style="display:flex;align-items:center;gap:0;margin-bottom:0;flex:1;">
+        <input id="supplierCategorySearch" type="text" placeholder="🔍 Search table..." style="flex:1;max-width:260px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;font-size:13px;" oninput="filterSupplierCategory()">
+        <div class="date-range-filter" style="display:flex;flex-direction:row;align-items:center;gap:10px;margin-bottom:0;margin-right:24px;">
+          <div class="date-filter-title" style="font-size:1.08em;font-weight:600;color:#2563eb;margin-right:18px;white-space:nowrap;letter-spacing:0.01em;display:flex;align-items:center;">
+            <span style="display:inline-block;padding:4px 12px;background:#e0f2fe;border-radius:8px 8px 8px 8px;box-shadow:0 2px 8px #2563eb11;font-family:'Segoe UI','Inter',Arial,sans-serif;">Filter Expenses by Date Range</span>
+          </div>
+          <label for="supplierCategoryDateFrom" style="font-size:0.95em;font-weight:600;margin-bottom:0;">From</label>
+          <input id="supplierCategoryDateFrom" type="date" style="width:120px;padding:4px 8px;font-size:0.95em;border-radius:6px;border:1px solid #cbd5e1;" onchange="filterSupplierCategory()" placeholder="MM/DD/YYYY">
+          <label for="supplierCategoryDateTo" style="font-size:0.95em;font-weight:600;margin-bottom:0;">To</label>
+          <input id="supplierCategoryDateTo" type="date" style="width:120px;padding:4px 8px;font-size:0.95em;border-radius:6px;border:1px solid #cbd5e1;" onchange="filterSupplierCategory()" placeholder="MM/DD/YYYY">
+          <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setSupplierCategoryDateRange('today')">Today</button>
+          <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setSupplierCategoryDateRange('week')">This Week</button>
+          <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setSupplierCategoryDateRange('month')">This Month</button>
+          <button type="button" class="btn btn-secondary" style="font-size:0.95em;padding:4px 10px;" onclick="setSupplierCategoryDateRange('year')">This Year</button>
+        </div>
+      </div>
+    </div>
+
     <div id="supplierCategorySummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px;">
       <!-- Summary cards populated by JavaScript -->
     </div>
@@ -1234,8 +1253,9 @@ function displaySupplierCategoryDetails(key) {
   let totalInvoices = 0;
   const suppliers = new Set();
   let rowsHtml = '';
+  const rows = getFilteredCategoryRows(key);
 
-  catData.rows.forEach(row => {
+  rows.forEach(row => {
     totalInvoices += row.invoiceAmount || 0;
     if (row.supplierName) suppliers.add(row.supplierName);
     rowsHtml += `<tr>
@@ -1258,7 +1278,7 @@ function displaySupplierCategoryDetails(key) {
   </tr>`;
   tbody.innerHTML = rowsHtml;
 
-  const avg = catData.rows.length ? totalInvoices / catData.rows.length : 0;
+  const avg = rows.length ? totalInvoices / rows.length : 0;
   summaryDiv.innerHTML = `
     <div style="background:#f0f9ff;padding:12px;border-radius:8px;border-left:4px solid #2563eb;">
       <div style="font-size:12px;color:#666;margin-bottom:6px;">Total Invoices</div>
@@ -1274,9 +1294,53 @@ function displaySupplierCategoryDetails(key) {
     </div>
     <div style="background:#f3e8ff;padding:12px;border-radius:8px;border-left:4px solid #9333ea;">
       <div style="font-size:12px;color:#666;margin-bottom:6px;">Invoice Count</div>
-      <div style="font-size:20px;font-weight:bold;color:#9333ea;">${catData.rows.length}</div>
+      <div style="font-size:20px;font-weight:bold;color:#9333ea;">${rows.length}</div>
     </div>
   `;
+}
+
+function getFilteredCategoryRows(key) {
+  const catData = supplierCategoryData[key];
+  if (!catData) return [];
+  const term = (document.getElementById('supplierCategorySearch')?.value || '').trim().toLowerCase();
+  const from = document.getElementById('supplierCategoryDateFrom')?.value || '';
+  const to = document.getElementById('supplierCategoryDateTo')?.value || '';
+  return catData.rows.filter(row => {
+    if (from || to) {
+      const d = row.transactionDate ? String(row.transactionDate).substring(0, 10) : '';
+      if (!d || (from && d < from) || (to && d > to)) return false;
+    }
+    if (!term) return true;
+    return [row.supplierName, row.transactionDate ? String(row.transactionDate).substring(0, 10) : '', row.invoiceNumber, row.checkNumber, row.invoiceAmount, row.notes]
+      .some(v => v != null && String(v).toLowerCase().includes(term));
+  });
+}
+
+function filterSupplierCategory() {
+  onSupplierCategoryChange();
+}
+
+function setSupplierCategoryDateRange(range) {
+  const today = new Date();
+  let from, to;
+  if (range === 'today') {
+    from = to = today;
+  } else if (range === 'week') {
+    from = new Date(today);
+    from.setDate(today.getDate() - today.getDay());
+    to = new Date(from);
+    to.setDate(from.getDate() + 6);
+  } else if (range === 'month') {
+    from = new Date(today.getFullYear(), today.getMonth(), 1);
+    to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  } else if (range === 'year') {
+    from = new Date(today.getFullYear(), 0, 1);
+    to = new Date(today.getFullYear(), 11, 31);
+  }
+  const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  document.getElementById('supplierCategoryDateFrom').value = ymd(from);
+  document.getElementById('supplierCategoryDateTo').value = ymd(to);
+  filterSupplierCategory();
 }
 
 function onSupplierCategoryChange() {
@@ -1302,7 +1366,7 @@ function exportSupplierCategoryToPDF() {
 
   let totalInvoices = 0;
   let tableRows = '';
-  catData.rows.forEach(row => {
+  getFilteredCategoryRows(key).forEach(row => {
     totalInvoices += row.invoiceAmount || 0;
     tableRows += `
       <tr>
@@ -1398,8 +1462,9 @@ function exportSupplierCategoryToExcel() {
   const fmt = (v) => Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
   const q = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
 
+  const rows = getFilteredCategoryRows(key);
   let totalInvoices = 0;
-  catData.rows.forEach(row => { totalInvoices += row.invoiceAmount || 0; });
+  rows.forEach(row => { totalInvoices += row.invoiceAmount || 0; });
 
   let csv = 'Supplier Expenses Categories Report\n';
   csv += `Restaurant,${q(restaurantName)}\n`;
@@ -1408,12 +1473,12 @@ function exportSupplierCategoryToExcel() {
 
   csv += 'Summary\n';
   csv += `Total Invoices,${q('$' + fmt(totalInvoices))}\n`;
-  csv += `Invoice Count,${catData.rows.length}\n\n`;
+  csv += `Invoice Count,${rows.length}\n\n`;
 
   csv += 'Supplier Expense Details\n';
   csv += 'Supplier Name,Transaction Date,Invoice Number,Check Number,Invoice Amount,Notes\n';
 
-  catData.rows.forEach(row => {
+  rows.forEach(row => {
     csv += `${q(row.supplierName)},`;
     csv += `${row.transactionDate ? row.transactionDate.substring(0,10) : ''},`;
     csv += `${q(row.invoiceNumber)},`;
