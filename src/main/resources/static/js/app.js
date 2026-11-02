@@ -805,17 +805,17 @@ function renderSupplierTable() {
   }
   renderSupplierPagination(filtered.length);
   renderSupplierKpiAndGraphs(filtered);
-  renderSupplierNotesPie(filtered);
+  renderSupplierNotesTreemap(filtered);
   updateSupplierSortIndicators();
 }
 
-// Pie of invoice amount share by Notes type (top 5, rest grouped as Other)
-function renderSupplierNotesPie(rows) {
-  const canvas = document.getElementById('supplierNotesPie');
+// Treemap of invoice amount share by Notes type (top 5, rest grouped as Other)
+function renderSupplierNotesTreemap(rows) {
+  const canvas = document.getElementById('supplierNotesTreemap');
   if (!canvas || typeof Chart === 'undefined') return;
-  if (window.supplierNotesPieChart) {
-    window.supplierNotesPieChart.destroy();
-    window.supplierNotesPieChart = null;
+  if (window.supplierNotesTreemapChart) {
+    window.supplierNotesTreemapChart.destroy();
+    window.supplierNotesTreemapChart = null;
   }
   const totals = new Map();
   rows.forEach(row => {
@@ -833,14 +833,25 @@ function renderSupplierNotesPie(rows) {
   const sum = entries.reduce((s, e) => s + e.amount, 0);
   if (!sum) return;
   const pct = v => (v / sum * 100).toFixed(1);
-  window.supplierNotesPieChart = new Chart(canvas.getContext('2d'), {
-    type: 'pie',
+  const palette = ['#2563eb', '#f97316', '#22c55e', '#a855f7', '#0ea5e9', '#94a3b8'];
+  const money = v => '$' + v.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  window.supplierNotesTreemapChart = new Chart(canvas.getContext('2d'), {
+    type: 'treemap',
     data: {
-      labels: entries.map(e => `${e.label} (${pct(e.amount)}%)`),
       datasets: [{
-        data: entries.map(e => e.amount),
-        backgroundColor: ['#2563eb', '#f97316', '#22c55e', '#a855f7', '#facc15', '#94a3b8'],
-        borderWidth: 1
+        tree: entries,
+        key: 'amount',
+        spacing: 1,
+        borderWidth: 0,
+        borderRadius: 3,
+        backgroundColor: ctx => palette[ctx.dataIndex % palette.length],
+        labels: {
+          display: true,
+          color: '#fff',
+          font: { size: 11, weight: 'bold' },
+          overflow: 'fit',
+          formatter: ctx => ctx.raw && ctx.raw._data ? [ctx.raw._data.label, pct(ctx.raw._data.amount) + '%'] : ''
+        }
       }]
     },
     options: {
@@ -848,13 +859,11 @@ function renderSupplierNotesPie(rows) {
       maintainAspectRatio: false,
       layout: { padding: 0 },
       plugins: {
-        legend: {
-          position: 'right',
-          labels: { boxWidth: 8, boxHeight: 8, padding: 4, font: { size: 11 }, color: getComputedStyle(document.body).color }
-        },
+        legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx => `${entries[ctx.dataIndex].label}: $${ctx.parsed.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} (${pct(ctx.parsed)}%)`
+            title: () => '',
+            label: ctx => `${ctx.raw._data.label}: ${money(ctx.raw._data.amount)} (${pct(ctx.raw._data.amount)}%)`
           }
         }
       }
