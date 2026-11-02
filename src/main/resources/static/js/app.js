@@ -523,6 +523,50 @@ function updateSupplierSortIndicators() {
 let supplierEditId = null;
 let supplierData = [];
 let supplierSearchTerm = '';
+let supplierDateFrom = '', supplierDateTo = '';
+
+function applySupplierDateFilter(rows) {
+  if (!supplierDateFrom && !supplierDateTo) return rows;
+  return rows.filter(row => {
+    const d = row.transactionDate ? String(row.transactionDate).substring(0, 10) : '';
+    if (!d) return false;
+    if (supplierDateFrom && d < supplierDateFrom) return false;
+    if (supplierDateTo && d > supplierDateTo) return false;
+    return true;
+  });
+}
+
+function filterSupplierTable() {
+  const search = document.getElementById('supplierTableSearch');
+  supplierSearchTerm = search ? search.value.trim().toLowerCase() : '';
+  supplierDateFrom = document.getElementById('supplierDateFrom')?.value || '';
+  supplierDateTo = document.getElementById('supplierDateTo')?.value || '';
+  supplierPage = 1;
+  renderSupplierTable();
+}
+
+function setSupplierDateRange(range) {
+  const today = new Date();
+  let from, to;
+  if (range === 'today') {
+    from = to = today;
+  } else if (range === 'week') {
+    from = new Date(today);
+    from.setDate(today.getDate() - today.getDay());
+    to = new Date(from);
+    to.setDate(from.getDate() + 6);
+  } else if (range === 'month') {
+    from = new Date(today.getFullYear(), today.getMonth(), 1);
+    to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  } else if (range === 'year') {
+    from = new Date(today.getFullYear(), 0, 1);
+    to = new Date(today.getFullYear(), 11, 31);
+  }
+  const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  document.getElementById('supplierDateFrom').value = ymd(from);
+  document.getElementById('supplierDateTo').value = ymd(to);
+  filterSupplierTable();
+}
 
 function getSelectedRestaurantId() {
   const sel = document.getElementById('restaurantSelect');
@@ -671,7 +715,7 @@ function renderSupplierPagination(filteredLength) {
 
 function gotoSupplierPage(page) {
   const selectedRestaurantId = getSelectedRestaurantId();
-  let filtered = supplierData.filter(row => row.restaurantId == selectedRestaurantId);
+  let filtered = applySupplierDateFilter(supplierData.filter(row => row.restaurantId == selectedRestaurantId));
   if (supplierSearchTerm) {
     filtered = filtered.filter(row =>
       (row.supplierName && row.supplierName.toLowerCase().includes(supplierSearchTerm)) ||
@@ -694,7 +738,7 @@ function renderSupplierTable() {
   const selectedRestaurantId = getSelectedRestaurantId();
   let totalAmount = 0;
   // Filter by restaurant and search term
-  let filtered = supplierData.filter(row => row.restaurantId == selectedRestaurantId);
+  let filtered = applySupplierDateFilter(supplierData.filter(row => row.restaurantId == selectedRestaurantId));
   if (supplierSearchTerm) {
     filtered = filtered.filter(row =>
       (row.supplierName && row.supplierName.toLowerCase().includes(supplierSearchTerm)) ||
@@ -1019,10 +1063,12 @@ function printSupplierPDF() {
   setPrintReportTitle(reportTitle);
   const form = document.getElementById('supplierForm');
   const search = document.getElementById('supplierTableSearch');
+  const supplierDateRange = document.getElementById('supplierDateRange');
   const pag = document.getElementById('supplierPagination');
   const tabs = document.querySelector('.tab-menu');
   if (form) form.style.display = 'none';
   if (search) search.style.display = 'none';
+  if (supplierDateRange) supplierDateRange.style.display = 'none';
   if (pag) pag.style.display = 'none';
   if (tabs) tabs.style.display = 'none';
 
@@ -1037,7 +1083,7 @@ function printSupplierPDF() {
     if (tbody) {
       // Recreate filtered list same as renderSupplierTable
       const selectedRestaurantId = getSelectedRestaurantId();
-      let filtered = supplierData.filter(row => row.restaurantId == selectedRestaurantId);
+      let filtered = applySupplierDateFilter(supplierData.filter(row => row.restaurantId == selectedRestaurantId));
       if (supplierSearchTerm) {
         filtered = filtered.filter(row =>
           (row.supplierName && row.supplierName.toLowerCase().includes(supplierSearchTerm)) ||
@@ -1129,6 +1175,7 @@ function printSupplierPDF() {
     if (supplierTfoot) supplierTfoot.style.display = originalTfootDisplay || '';
     if (form) form.style.display = '';
     if (search) search.style.display = '';
+    if (supplierDateRange) supplierDateRange.style.display = '';
     if (pag) pag.style.display = '';
     if (tabs) tabs.style.display = '';
     document.title = originalTitle;
