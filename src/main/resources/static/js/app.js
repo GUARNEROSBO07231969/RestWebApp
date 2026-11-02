@@ -272,7 +272,7 @@ function renderTable() {
       // Highlight if captured and calculated sale amounts differ by $200 or more
       highlight = ' style="background:rgba(254,242,242,0.92)!important;color:#b91c1c !important;border:2.5px solid #dc2626 !important;box-shadow:0 0 0 2px #dc262655 !important;font-weight:600;transition:background 0.3s,color 0.2s,box-shadow 0.3s;z-index:1;position:relative;"';
     }
-    const diffTitle = Math.abs(saleAmount - (x.capturedSaleAmount||0)) >= 200 ? ' data-sale-tooltip="The difference between Captured vs Calculated Sale amount is 200 or more. Please review the Sale details."' : '';
+    const diffTitle = Math.abs(saleAmount - (x.capturedSaleAmount||0)) >= 200 ? ` data-sale-diff="${fmt(Math.abs(saleAmount - (x.capturedSaleAmount||0)))}"` : '';
     rows.innerHTML+=`<tr${highlight}${diffTitle}>
       <td>${x.date ? x.date.substring(0,10) : ''}</td>
       <td>${fmt(x.capturedSaleAmount||0)}</td>
@@ -1672,9 +1672,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   tbodies.forEach(function(tbody) {
     tbody.addEventListener('mousemove', function(e) {
-      const tr = e.target.closest('tr[data-sale-tooltip]');
+      const tr = e.target.closest('tr[data-sale-diff]');
       if (!tr) { tip.classList.remove('visible'); return; }
-      tip.textContent = tr.getAttribute('data-sale-tooltip');
+      const diff = tr.getAttribute('data-sale-diff');
+      tip.textContent = '';
+      const bold = function(t) { const s = document.createElement('strong'); s.textContent = t; return s; };
+      tip.append('The difference between the Captured Sale and Calculated Sale is ', bold(diff), ', which exceeds the ', bold('$200 threshold'), '. Please review the sale details and verify the discrepancy');
       place(e);
       tip.classList.add('visible');
     });
