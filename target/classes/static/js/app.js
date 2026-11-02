@@ -1594,8 +1594,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Custom tooltip for sales rows flagged with a large captured/calculated difference
 document.addEventListener('DOMContentLoaded', function() {
-  const tbody = document.getElementById('rows');
-  if (!tbody) return;
+  const tbodies = ['rows', 'dashboardWeekSalesTableBody', 'weekSalesTableBody']
+    .map(function(id) { return document.getElementById(id); })
+    .filter(Boolean);
+  if (!tbodies.length) return;
   const tip = document.createElement('div');
   tip.id = 'saleRowTooltip';
   tip.setAttribute('role', 'tooltip');
@@ -1611,12 +1613,14 @@ document.addEventListener('DOMContentLoaded', function() {
     tip.style.top = Math.max(8, top) + 'px';
   }
 
-  tbody.addEventListener('mousemove', function(e) {
-    const tr = e.target.closest('tr[data-sale-tooltip]');
-    if (!tr) { tip.classList.remove('visible'); return; }
-    tip.textContent = tr.getAttribute('data-sale-tooltip');
-    place(e);
-    tip.classList.add('visible');
+  tbodies.forEach(function(tbody) {
+    tbody.addEventListener('mousemove', function(e) {
+      const tr = e.target.closest('tr[data-sale-tooltip]');
+      if (!tr) { tip.classList.remove('visible'); return; }
+      tip.textContent = tr.getAttribute('data-sale-tooltip');
+      place(e);
+      tip.classList.add('visible');
+    });
+    tbody.addEventListener('mouseleave', function() { tip.classList.remove('visible'); });
   });
-  tbody.addEventListener('mouseleave', function() { tip.classList.remove('visible'); });
 });
