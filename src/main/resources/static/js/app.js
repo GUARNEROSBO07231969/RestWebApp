@@ -272,7 +272,7 @@ function renderTable() {
       // Highlight if captured and calculated sale amounts differ by $200 or more
       highlight = ' style="background:rgba(254,242,242,0.92)!important;color:#b91c1c !important;border:2.5px solid #dc2626 !important;box-shadow:0 0 0 2px #dc262655 !important;font-weight:600;transition:background 0.3s,color 0.2s,box-shadow 0.3s;z-index:1;position:relative;"';
     }
-    const diffTitle = Math.abs(saleAmount - (x.capturedSaleAmount||0)) >= 200 ? ' title="The difference between Captured vs Calculated Sale amount is 200 or more. Please review the Sale details."' : '';
+    const diffTitle = Math.abs(saleAmount - (x.capturedSaleAmount||0)) >= 200 ? ' data-sale-tooltip="The difference between Captured vs Calculated Sale amount is 200 or more. Please review the Sale details."' : '';
     rows.innerHTML+=`<tr${highlight}${diffTitle}>
       <td>${x.date ? x.date.substring(0,10) : ''}</td>
       <td>${fmt(x.capturedSaleAmount||0)}</td>
@@ -1590,4 +1590,33 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
+});
+
+// Custom tooltip for sales rows flagged with a large captured/calculated difference
+document.addEventListener('DOMContentLoaded', function() {
+  const tbody = document.getElementById('rows');
+  if (!tbody) return;
+  const tip = document.createElement('div');
+  tip.id = 'saleRowTooltip';
+  tip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tip);
+
+  function place(e) {
+    const gap = 14;
+    let left = e.clientX + gap;
+    let top = e.clientY + gap;
+    if (left + tip.offsetWidth > window.innerWidth - 8) left = e.clientX - tip.offsetWidth - gap;
+    if (top + tip.offsetHeight > window.innerHeight - 8) top = e.clientY - tip.offsetHeight - gap;
+    tip.style.left = Math.max(8, left) + 'px';
+    tip.style.top = Math.max(8, top) + 'px';
+  }
+
+  tbody.addEventListener('mousemove', function(e) {
+    const tr = e.target.closest('tr[data-sale-tooltip]');
+    if (!tr) { tip.classList.remove('visible'); return; }
+    tip.textContent = tr.getAttribute('data-sale-tooltip');
+    place(e);
+    tip.classList.add('visible');
+  });
+  tbody.addEventListener('mouseleave', function() { tip.classList.remove('visible'); });
 });
