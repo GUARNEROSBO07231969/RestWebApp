@@ -1064,3 +1064,7 @@ table.modern tbody tr:hover, #supplierTable tbody tr:hover {
   background: #f8fafc;
   color: #0f172a;
 }
+
+/* Keep the supplier KPI size unchanged next to the notes pie chart */
+.supplier-kpi { align-self: start; }
+.supplier-notes-chart { position: relative; }
