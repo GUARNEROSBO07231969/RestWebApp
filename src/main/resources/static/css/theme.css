@@ -1068,3 +1068,16 @@ table.modern tbody tr:hover, #supplierTable tbody tr:hover {
 /* Keep the supplier KPI size unchanged next to the notes pie chart */
 .supplier-kpi { align-self: start; }
 .supplier-notes-chart { position: relative; }
+
+/* Supplier Expenses table rows match the Supplier Expenses Dashboard table rows */
+#supplierTable tbody td {
+  padding: 2px 6px !important;
+  height: 14px !important;
+  font-size: 12px !important;
+  border-bottom: 1px solid #e2e8f0;
+}
+#supplierTable tbody .action-btn {
+  padding: 2px 8px !important;
+  font-size: 11px !important;
+  border-radius: 6px !important;
+}
