@@ -470,6 +470,11 @@ function groupDashboardSalesByWeek(salesData) {
     
     dashboardWeekData[weekKey].rows.push(row);
   });
+
+  // Oldest date first within each week
+  Object.values(dashboardWeekData).forEach(w => {
+    w.rows.sort((a, b) => String(a.date).localeCompare(String(b.date)) || (a.id || 0) - (b.id || 0));
+  });
 }
 
 function populateDashboardWeekDropdown() {
